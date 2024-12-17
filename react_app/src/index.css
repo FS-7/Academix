@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Times New Roman', Times, serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: rgb(0, 0, 0);
+  background-color: #ffffff;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+}
+
+#root{
+  width: 100%;
+  height: 100%;
+}
+
+@media (min-width: 400px){
+  .lowestRes\:hidden{
+    display: none;
+  }
+
+  .lowestRes\:flex{
+    display: flex;
+  }
+}
