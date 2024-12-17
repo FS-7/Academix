@@ -18,36 +18,24 @@ def SkillAdd():
     data = json.loads(request.data)
     SKILL = data["skill"]
 
-    print(User, SKILL)
     res = CODES.FAILED
     try:
-        sql = "INSERT INTO STUDENT_SKILLS(STUDENT, SKILL) VALUES(%(STUDENT)s, %(SKILL)s);"
-        val = {"STUDENT": User, "SKILL": SKILL}
+        USN = -1
+        sql = "SELECT USN FROM STUDENTS WHERE STUDENTS=%(STUDENT)s;"
+        val = {"STUDENT": User}
+        cursor = execute(sql, val)
+        for u in cursor:
+            USN = u[0]
+        print(USN)
+        if(USN == -1):
+            return make_response({CODES.FAILED})
+        sql = "INSERT INTO STUDENT_SKILLS(STUDENT, SKILLS) VALUES(, %(SKILL)s);"
+        val = {"STUDENT": USN, "SKILL": SKILL}
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
             db.close()
             res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
-
-@skills.route("/Read", methods=["GET"])
-def SkillRead():
-    data = json.loads(request.data)
-    ID = data["id"]
-
-    res = CODES.FAILED
-    try:
-        sql = "SELECT * FROM STUDENT_SKILLS WHERE ID=%(ID)s);"
-        val = {"ID": ID}
-        cursor = execute(sql, val)
-        for c in cursor:
-            res = {"ID": c[0], "STUDENT": c[1], "SKILL": c[2]}
-        db.commit()
-        db.close()
-        return make_response(res)
     except:
         res = CODES.SQL_ERROR
         print()
@@ -64,10 +52,10 @@ def SkillReadAll():
         db.commit()
         db.close()
         return make_response(res)
-    except:
+    except NameError:
         res = CODES.SQL_ERROR
         print()
-    return make_response(str(res))
+    return make_response(list(res))
 
 @skills.route("/Update", methods=["POST"])
 def SkillUpdate():

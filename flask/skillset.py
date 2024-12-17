@@ -105,14 +105,14 @@ def SkillAdd():
 def SkillReadAll():
     res = []
     try:
-        sql = "SELECT * FROM SKILLS;"
+        sql = "SELECT S.ID, S.NAME AS NAME, SS.NAME AS SKILLSET, SS.ID AS SID FROM SKILLS AS S, SKILLSET AS SS WHERE S.SKILLSET=SS.ID;"
         cursor = execute(sql)
         for c in cursor.fetchall():
-            res.append({"ID": c[0], "NAME": c[1], "SKILLSET": c[2]})
+            res.append({"ID": c[0], "NAME": c[1], "SKILLSET": c[2], "SID": c[3]})
         db.commit()
         db.close()
         return make_response(res)
-    except TypeError:
+    except:
         res = CODES.SQL_ERROR
         print()
     return make_response(str(res))

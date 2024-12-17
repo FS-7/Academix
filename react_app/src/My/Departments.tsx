@@ -69,8 +69,10 @@ export function ReadDepartment(){
                     url: '/departments/ReadAll',
                 })
                 .then(res => {
-                    console.log(res.data)
-                    setDepartment(dept => dept = res.data)
+                    if(Array.isArray(res.data))
+                        setDepartment(dept => dept = res.data)
+                    else
+                        setDepartment(dept => dept = [])
                 });
             }, 1000)
         }, [])

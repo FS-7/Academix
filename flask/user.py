@@ -13,7 +13,7 @@ def index():
 def Register():
     data = json.loads(request.data)
     NAME = data["name"]
-    EMAIL = data["email"]
+    EMAIL = str.lower(data["email"])
     PHONE = data["phone"]
     PASSWORD = data["password"]
     PASS_HASH = sha256(PASSWORD.encode('utf-8')).hexdigest()
@@ -36,7 +36,7 @@ def Register():
 @user.route("/Login", methods=["GET", "POST"])
 def Login():
     data = json.loads(request.data)
-    EMAIL = data["email"]
+    EMAIL = str.lower(data["email"])
     PASSWORD = data["password"]
     PASS_HASH = sha256(PASSWORD.encode('utf-8')).hexdigest()
 

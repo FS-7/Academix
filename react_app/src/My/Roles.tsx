@@ -32,7 +32,10 @@ function Read_Roles(){
             })
             .then(
                 res => {
-                    setRes(res.data)
+                    if(Array.isArray(res.data))
+                        setRes(r => r = res.data)
+                    else
+                        setRes(r => r = [])
                 }
             )
         }, 1000)

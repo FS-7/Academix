@@ -50,7 +50,6 @@ function App() {
                         </Route>
                         <Route path="Skills" element={<Skills />} >
                             <Route path="Add"  element={<AddUserSkill />}/>
-                            <Route path="Update"  element={<UpdateUserSkill />}/>
                         </Route>
                         <Route path="Skillset" element={<SkillSet />} >
                             <Route path="Add" element={<AddSkillSet />} />
@@ -68,9 +67,6 @@ function App() {
                             <Route path="UpdateProfile" element={<PrivateRoute><UpdateProfile /> </PrivateRoute>} />
                             <Route path="UpdatePassword" element={<PrivateRoute><UpdatePassword /> </PrivateRoute>} />
                             <Route path="Roles">
-
-                            </Route>
-                            <Route path="Skills">
 
                             </Route>
                         </Route>

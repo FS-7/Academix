@@ -24,13 +24,14 @@ function ReadSkillSet(){
         axios({
             method: "get",
             url: "skillset/ReadAll",
-            data: {
-
-            }
+            data: {}
         }
         )
         .then(res => {
-            setSkillSet(ss => ss = res.data)
+            if(Array.isArray(res.data))
+                setSkillSet(ss => ss = res.data)
+            else
+                setSkillSet(ss => ss = [])
         })
     }, [])
     return skillSet
@@ -160,22 +161,22 @@ export function DeleteSkillSet(props: any){
     )
 }
 
-function ReadSkill(){
+export function ReadSkill(){
     const [skill, setSkill] = useState([])
     useEffect(() => {
         axios({
             method: "get",
             url: "skillset/skill/ReadAll",
-            data: {
-
-            }
+            data: {}
         }
         )
         .then(res => {
             setSkill(s => s = res.data)
         })
     }, [])
-    return skill
+    if(Array.isArray(skill))
+        return skill
+    return []
 }
 
 export function AddSkill(){
@@ -197,7 +198,6 @@ export function AddSkill(){
     }
     
     const skillset = ReadSkillSet()
-    console.log(skillset)
     const skills = ReadSkill()
 
     return(
@@ -235,7 +235,7 @@ export function AddSkill(){
                                 items => 
                                     <tr key={items["ID"]}>
                                         <td>{items["NAME"]}</td>
-                                        <td>{items["SKILLSET"]}</td>
+                                        <td>{items["SID"]}</td>
                                         <td>{<DeleteSkill id={items["ID"]}/>}</td>
                                     </tr>
                             )
@@ -278,14 +278,12 @@ export function UpdateSkill(){
                     <select name="skill" id="skill" required className={input_text}>
                         {
                             skills?.map(
-                                items => <option key={item["ID"]} value={item["ID"]}>{item["NAME"]}</option>
+                                items => <option key={items["ID"]} value={items["ID"]}>{items["NAME"]}</option>
                             )
                         }
                     </select>
                     <label htmlFor="name">NAME: </label>
                     <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
-
-                    
                     <button type="submit" className={submit}>UPDATE</button>
                 </form>
             </div>

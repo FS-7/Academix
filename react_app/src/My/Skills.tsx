@@ -2,10 +2,10 @@ import axios from "axios";
 import { Body } from "../components/Body";
 import { inner_form, input_text, outer_div, submit } from "../App";
 import { useEffect, useState } from "react";
+import { ReadSkill } from "./Skillset";
 
 const menuItems = [
-    {path: "/skills/Add", text: "Add Skills", comp: <AddUserSkill/>},
-    {path: "/skills/Update", text: "Update Skills", comp: <UpdateUserSkill />},
+    {path: "/skills/Add", text: "Add Skills", comp: <AddUserSkill/>}
 ]
 
 export function Skills(){
@@ -21,7 +21,7 @@ function RUS(){
     useEffect(() => {
         axios({
             method: "get",
-            url: "skill/ReadAll",
+            url: "/skills/ReadAll",
             data: {}
         }
         )
@@ -29,7 +29,9 @@ function RUS(){
             setRus(r => r = res.data)
         })
     }, [])
-    return rus    
+    if(Array.isArray(rus))
+        return rus
+    return []
 }
 
 export function AddUserSkill(){
@@ -49,16 +51,17 @@ export function AddUserSkill(){
         })
     }
     const rus = RUS()
+    const skills = ReadSkill()
     return(
         <>
         <div className={'w-full h-full flex flex-col items-center'}>
             <div className={outer_div}>
                 <h1>ADD SKILL:</h1>
                 <form action={AUS} className={inner_form}>
-                    <label htmlFor="skillset">SKILLSET: </label>
-                    <select name="skillset" id="skillset" required className={input_text}>
+                    <label htmlFor="skill">SKILL: </label>
+                    <select name="skill" id="skill" required className={input_text}>
                         {
-                            rus?.map(
+                            skills?.map(
                                 items => <option key={items["ID"]} value={items["ID"]}>{items["NAME"]}</option>
                             )
                         }
@@ -72,57 +75,22 @@ export function AddUserSkill(){
                         <tr>
                             <th>SKILL SET</th>
                             <th>SKILL NAME: </th>
+                            <th>DELETE</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
                             rus?.map(
-                                item => 
-                                <tr key={item["ID"]}>
-                                    <td>{item["SKILLNAME"]}</td>
-                                    <td><DeleteUserSkill id={item["ID"]}/></td>
+                                items => 
+                                <tr key={items["ID"]}>
+                                    <td>{items["SKILLSET"]}</td>
+                                    <td>{items["SKILLNAME"]}</td>
+                                    <td><DeleteUserSkill id={items["ID"]}/></td>
                                 </tr>
                             )
                         }
                     </tbody>
                 </table>
-            </div>
-        </div>
-        </>
-    )
-}
-
-export function UpdateUserSkill(){
-    function UUS(formData: any){
-
-        axios({
-            method: "post",
-            url: "skills/Update",
-            data: {
-
-            }
-        }
-        )
-        .then(res => {
-            alert("Updated")
-            console.log(res)
-        })
-    }
-
-    return(
-        <>
-        <div className={'w-full h-full flex flex-col items-center'}>
-            <div className={outer_div}>
-                <h1>UPDATE SKILL:</h1>
-                <form action={UUS} className={inner_form}>
-                    <label htmlFor="skillset">SKILL: </label>
-                    <select name="skillset" id="skillset" required className={input_text}>
-                        {
-                            
-                        }
-                    </select>
-                    <button type="submit" className={submit}>Add</button>
-                </form>
             </div>
         </div>
         </>
@@ -149,7 +117,7 @@ export function DeleteUserSkill(props: any){
     return(
         <>
         <form action={DUS} className="py-2 justify-items-center">
-            <button type="submit" name="id" value={props.id} ></button>
+            <button type="submit" name="id" value={props.id} >DELETE</button>
         </form>
         </>
     )
