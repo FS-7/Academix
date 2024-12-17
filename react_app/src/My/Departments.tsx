@@ -1,8 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Body } from "../components/Body";
-
-const input_text = "p-2 my-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline";
+import { outer_div, inner_form, input_text, submit } from "../App.tsx";
 
 const menuItems = [
     {path: "/department/Create", text: "Create", comp: <CreateDepartment />},
@@ -30,43 +29,50 @@ export function CreateDepartment(){
             }
         })
         .then(
-            res => alert("Department Added")
+            res => {
+                alert("Department Added")
+            }
         )
     }
     
     return(
         <>
-        <div className="w-4/6 justify-items-center">
-            <h1>CREATE DEPARTMENT:</h1>
-            <form action={CreateDept} className="w-4/6 py-2 flex flex-col">
-                <label htmlFor="code">CODE: </label>
-                <input type="text" id="code" name="code" placeholder="Code" required className={input_text}></input>
+        <div className={'w-full h-full flex flex-col items-center'}>
+            <div className={outer_div}>
+                <h1>CREATE DEPARTMENT:</h1>
+                <form action={CreateDept} className={inner_form}>
+                    <label htmlFor="code">CODE: </label>
+                    <input type="text" id="code" name="code" placeholder="Code" required className={input_text}></input>
 
-                <label htmlFor="name">NAME: </label>
-                <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
+                    <label htmlFor="name">NAME: </label>
+                    <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
 
-                <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">CREATE</button>
-            </form>
+                    <button type="submit" className={submit}>CREATE</button>
+                </form>
+            </div>
+            <div className={outer_div}>
+                <ReadDepartment />
+            </div>
         </div>
-        <ReadDepartment />
-        
         </>
     )
 }
 
-export function ReadDepartment(props){
+export function ReadDepartment(){
     const [departments, setDepartment] = useState([]);
     
     function ReadDept(){
         useEffect(() => {
-            axios({
-                method: "GET",
-                url: '/departments/ReadAll',
-            })
-            .then(res => {
-                console.log(res.data)
-                setDepartment(dept => dept = res.data)
-            });
+            setTimeout(() => {
+                axios({
+                    method: "GET",
+                    url: '/departments/ReadAll',
+                })
+                .then(res => {
+                    console.log(res.data)
+                    setDepartment(dept => dept = res.data)
+                });
+            }, 1000)
         }, [])
     }
     ReadDept()
@@ -118,7 +124,7 @@ export function RemoveDepartment(props){
     return(
         <>
         <form action={RemoveDept} className="py-2 justify-items-center">
-            <button type="submit" name="code" value={props.code} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">DELETE</button>
+            <button type="submit" name="code" value={props.code} className={submit}>DELETE</button>
         </form>
         </>
     )
@@ -134,22 +140,24 @@ export function UpdateDepartment(){
             newcode = code
         }
         useEffect(() => {
-            axios({
-                method: "POST",
-                url: '/departments/Update',
-                data: {
-                    code: code,
-                    newcode: newcode,
-                    newname: newname
-                }
-            })
+            setTimeout(() =>{
+                axios({
+                    method: "POST",
+                    url: '/departments/Update',
+                    data: {
+                        code: code,
+                        newcode: newcode,
+                        newname: newname
+                    }
+                })
+            }, 1000)
         }, [])
     }
     return(
         <>
-        <div className="w-4/6 justify-items-center bg-blue-500 rounded-xl">
+        <div className={outer_div}>
             <h1>UPDATE DEPARTMENT:</h1>
-            <form action={UpdateDept} className="w-4/6 py-2 flex flex-col">
+            <form action={UpdateDept} className={inner_form}>
                 <label htmlFor="code">CODE: </label>
                 <input type="text" id="code" name="code" placeholder="Code" className={input_text}></input>
                 
@@ -159,7 +167,7 @@ export function UpdateDepartment(){
                 <label htmlFor="name">NAME: </label>
                 <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
 
-                <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">UPDATE DEPARTMENT</button>
+                <button type="submit" className={submit}>UPDATE DEPARTMENT</button>
             </form>
         </div>
         </>

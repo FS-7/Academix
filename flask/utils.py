@@ -20,11 +20,9 @@ db = mysql.connector.connect(
     database="academix"
 )
 
-def HttpResponse(r):
-    return r
-
 def execute(sql, val={}):
-    cursor = db.cursor()
+    db.connect()
+    cursor = db.cursor(buffered=True)
     cursor.execute(sql, val)
     return cursor
 
@@ -35,6 +33,7 @@ def deletePrevSessions(id):
         cursor = db.cursor()
         cursor.execute(sql, val, multi=True)
         db.commit()
+        db.close()
         return CODES.SUCCESS
     
     except:
@@ -49,6 +48,7 @@ def createSession(id):
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
+            db.close()
             return (CODES.SUCCESS, TOKEN)
         return (CODES.FAILED, '')
     
@@ -70,7 +70,6 @@ def GetUser(TOKEN):
     val = { "TOKEN": TOKEN }
     cursor = execute(sql, val)
     for x in cursor:
-        print(x)
         id = x[0]
-    print("ID: ", id)
+    db.close()
     return id

@@ -1,5 +1,6 @@
 from flask import Blueprint, make_response, request
 from utils import CODES, db, execute, GetUser, GetToken
+import json
 
 skills = Blueprint("skills", __name__)
 
@@ -14,8 +15,10 @@ def SkillAdd():
         return make_response(str(CODES.UNAUTHORIZED))
     
     User = GetUser(TOKEN)
-    SKILL = request.form["skill"]
+    data = json.loads(request.data)
+    SKILL = data["skill"]
 
+    print(User, SKILL)
     res = CODES.FAILED
     try:
         sql = "INSERT INTO STUDENT_SKILLS(STUDENT, SKILL) VALUES(%(STUDENT)s, %(SKILL)s);"
@@ -23,6 +26,7 @@ def SkillAdd():
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
+            db.close()
             res = CODES.SUCCESS
     except:
         res = CODES.SQL_ERROR
@@ -31,7 +35,8 @@ def SkillAdd():
 
 @skills.route("/Read", methods=["GET"])
 def SkillRead():
-    ID = request.GET["id"]
+    data = json.loads(request.data)
+    ID = data["id"]
 
     res = CODES.FAILED
     try:
@@ -41,6 +46,7 @@ def SkillRead():
         for c in cursor:
             res = {"ID": c[0], "STUDENT": c[1], "SKILL": c[2]}
         db.commit()
+        db.close()
         return make_response(res)
     except:
         res = CODES.SQL_ERROR
@@ -56,6 +62,7 @@ def SkillReadAll():
         for c in cursor:
             res.append({"ID": c[0], "STUDENT": c[1], "SKILL": c[2]})
         db.commit()
+        db.close()
         return make_response(res)
     except:
         res = CODES.SQL_ERROR
@@ -69,11 +76,12 @@ def SkillUpdate():
         return make_response(str(CODES.UNAUTHORIZED))
     
     STUDENT = GetUser(TOKEN)
-    ID = request.form["id"]
-    NEWID = request.form["newid"]
-    NEWSKILL = request.form["newskill"]
     
-
+    data = json.loads(request.data)
+    ID = data["id"]
+    NEWID = data["newid"]
+    NEWSKILL = data["newskill"]
+    
     res = CODES.FAILED
     try:
         sql = "UPDATE STUDENT_SKILLS SET ID=%(NEWID)s, SKILL=%(NEWSKILL)s WHERE ID=%(ID)s AND STUDENT=(SELECT USN FROM STUDENTS WHERE ID=%(STUDENT)s));"
@@ -94,13 +102,16 @@ def SkillRemove():
         return make_response(str(CODES.UNAUTHORIZED))
     
     STUDENT = GetUser(TOKEN)
-    ID = request.form["id"]
+
+    data = json.loads(request.data)
+    ID = data["id"]
     res = CODES.FAILED
     try:
         sql = "DELETE FROM STUDENT_SKILLS WHERE ID=%(ID)s AND STUDENT=(SELECT USN FROM STUDENTS WHERE ID=%(STUDENT)s);"
         val = {"ID": ID, "STUDENT": STUDENT}
         execute(sql, val)
         db.commit()
+        db.close()
         res = CODES.SUCCESS
     except:
         res = CODES.SQL_ERROR

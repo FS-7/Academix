@@ -1,5 +1,6 @@
 from flask import Blueprint, make_response, request
 from utils import CODES, db, execute, GetUser, GetToken
+import json
 
 roles = Blueprint("roles", __name__)
 
@@ -9,7 +10,8 @@ def index():
 
 @roles.route('/Create', methods=["POST"])
 def Create():
-    NAME=request.form["name"]
+    data = json.loads(request.data)
+    NAME = data["name"]
     
     res = CODES.FAILED
     try:
@@ -26,7 +28,8 @@ def Create():
 
 @roles.route('/Read', methods=["GET"])
 def Read():
-    ID = request.GET["id"]
+    data = json.loads(request.data)
+    ID = data["id"]
     
     res = CODES.FAILED
     try:
@@ -49,19 +52,20 @@ def ReadAll():
         sql = "SELECT * FROM ROLES;"
         cursor = execute(sql)
         db.commit()
-        for c in cursor:
+        for c in cursor.fetchall():
             res.append({"ID": c[0], "NAME": c[1]})
         return make_response(res)
-    except:
+    except NameError:
         res = CODES.SQL_ERROR
         print()
     return make_response(str(res))
 
 @roles.route('/Update', methods=["POST"])
 def Update():
-    ID = request.form["id"]
-    NEWID = request.form["newid"]
-    NEWNAME = request.form["name"]
+    data = json.loads(request.data)
+    ID = data["id"]
+    NEWID = data["newid"]
+    NEWNAME = data["name"]
     
     res = CODES.FAILED
     try:
@@ -90,6 +94,52 @@ def Delete():
         res = CODES.SQL_ERROR
         print()
     return make_response(str(res))
+
+
+@roles.route('/MyRoles', methods=["GET"])
+def MyRole():
+    TOKEN = GetToken()
+    if(TOKEN == ''):
+        return make_response(str(CODES.UNAUTHORIZED))
+    
+    User = GetUser(TOKEN)
+
+    res = []
+    try:
+        sql = "SELECT * FROM AUTHORIZATION WHERE ID=%(ID)s AND STATUS='APPROVED'"
+        val = { "ID": User }
+        cursor = execute(sql, val)
+        res = cursor.fetchall()
+        if(cursor.rowcount):
+            db.commit()
+            return make_response(res)
+    except:
+        res = CODES.SQL_ERROR
+        print()
+    return make_response(str(res))
+
+@roles.route('/RemoveMyRole', methods=["POST"])
+def RemoveMyRole():
+    TOKEN = GetToken()
+    if(TOKEN == ''):
+        return make_response(str(CODES.UNAUTHORIZED))
+    
+    data = json.loads(request.data)
+    ID = data["id"]
+    User = GetUser(TOKEN)
+
+    res = CODES.FAILED
+    try:
+        sql = "DELETE FROM AUTHORIZATION WHERE ID=%(ID)s AND USER=%(USER)s;"
+        val = { "ID": ID, "USER": User }
+        cursor = execute(sql, val)
+        db.commit()
+        res = CODES.SUCCESS
+    except:
+        res = CODES.SQL_ERROR
+        print()
+    return make_response(str(res))
+
 
 @roles.route('/CreateRequest', methods=["POST"])
 def CreateRequest():
@@ -124,14 +174,14 @@ def CreateRequest():
 def GetMyRequest():
     
     TOKEN = GetToken()
-    if(TOKEN == ''):
+    if(TOKEN in ('', None)):
         return make_response(str(CODES.UNAUTHORIZED))
     
     User = GetUser(TOKEN)
 
     res = []
     try:
-        sql = "SELECT USER, ROLE, STATUS FROM AUTHORIZATION WHERE APPROVER=%(USER)s"
+        sql = "SELECT USER, ROLE, STATUS FROM AUTHORIZATION WHERE STATUS='P' AND APPROVER=%(USER)s"
         val = { "USER": User }
         cursor = db.cursor()
         cursor.execute(sql, val)
@@ -146,21 +196,22 @@ def GetMyRequest():
 @roles.route('/GetRequest', methods=["GET"])
 def GetRequest():
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(str(CODES.UNAUTHORIZED))
+    if(TOKEN in ('', None)):
+        return make_response({"status": str(CODES.UNAUTHORIZED)})
     
     User = GetUser(TOKEN)
 
+
     res = []
     try:
-        sql = "SELECT APPROVER, ROLE, STATUS FROM AUTHORIZATION WHERE USER=%(USER)s"
+        sql = "SELECT APPROVER, ROLE, STATUS FROM AUTHORIZATION  STATUS='P' WHERE USER=%(USER)s"
         val = { "USER": User }
         cursor = db.cursor()
         cursor.execute(sql, val)
         for r in cursor:
             res.append({"APPROVER": r[0], "ROLE": r[1], "STATUS": r[2]})
         return make_response(res)
-    except:
+    except ValueError:
         res = CODES.SQL_ERROR
         print()
     return make_response(str(res))

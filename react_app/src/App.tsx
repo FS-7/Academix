@@ -7,19 +7,24 @@ import { AddAttendance, Attendance, TrainFR } from "./My/Attendance.tsx";
 import { CreateDepartment, Department, UpdateDepartment } from "./My/Departments.tsx";
 import { Permission } from "./My/Permissions.tsx";
 import { Progress } from "./My/Progress.tsx";
-import { AddRoles, GetMyRequests, GetRequests, RequestUserRole, Roles, UpdateRoles } from "./My/Roles.tsx";
-import { SkillSet } from "./My/Skillset.tsx";
-import { Skills } from "./My/Skills.tsx";
-import { Login, Logout, Profile, Register, UpdateProfile, User } from "./My/User.tsx";
+import { AddRoles, GetMyRequests, GetRequests, MyRoles, ReadRoles, Roles, SetUserRole, UpdateRoles } from "./My/Roles.tsx";
+import { AddSkill, AddSkillSet, DeleteSkill, DeleteSkillSet, SkillSet, UpdateSkill, UpdateSkillSet } from "./My/Skillset.tsx";
+import { AddUserSkill, Skills, UpdateUserSkill } from "./My/Skills.tsx";
+import { Login, Logout, Profile, Register, UpdatePassword, UpdateProfile, User } from "./My/User.tsx";
 import { Notifications } from "./My/Notifications.tsx";
 import PageNotFound from "./shared/NotFound.tsx";
+
+export const outer_div = "py-4 w-1/2 justify-items-center rounded-xl bg-blue-500"
+export const inner_form = "w-4/6 px-2 py-2 border border-black rounded-xl flex flex-col"
+export const input_text = "p-2 my-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline";
+export const submit = "w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
 
 function App() {
     return (
         <>
         <div className='w-full h-full flex flex-col'>
             <Router>
-                <div className='w-auto h-1/12 px-2 py-2 flex bg-cyan-500 border border-solid border-black'><Header /></div>
+                <div className='w-auto h-1/12 px-2 py-2 flex bg-cyan-400 border border-solid border-black'><Header /></div>
                 <div className='w-auto h-5/6 flex '>
                     <Routes>
                         <Route path="/" index element={<Index />} />
@@ -37,20 +42,23 @@ function App() {
                         <Route path="Progress" element={<Progress />} />
                         <Route path="Roles" element={<Roles />} >
                             <Route path="Add" element={<AddRoles />}/>
+                            <Route path="Read" element={<ReadRoles />}/>
                             <Route path="Update" element={<UpdateRoles />}/>
-                            <Route path="CreateRequest" element={<RequestUserRole />}/>
-                            <Route path="GetMyRequest" element={<GetMyRequests />}/>
-                            <Route path="GetRequest" element={<GetRequests />}/>
+                            <Route path="SetUserRole" element={<SetUserRole />}/>
+                            <Route path="GetMyRequests" element={<GetMyRequests />}/>
+                            <Route path="GetRequests" element={<GetRequests />}/>
                         </Route>
                         <Route path="Skills" element={<Skills />} >
-                            <Route path="AddUserSkills" />
-                            <Route path="UserSkills" />
+                            <Route path="Add"  element={<AddUserSkill />}/>
+                            <Route path="Update"  element={<UpdateUserSkill />}/>
                         </Route>
                         <Route path="Skillset" element={<SkillSet />} >
-                            <Route path="AddSkillSet"/>
-                            <Route path="UpdateSkillSet"/>
-                            <Route path="AddSkills" />
-                            <Route path="UpdateSkills" />
+                            <Route path="Add" element={<AddSkillSet />} />
+                            <Route path="Update" element={<UpdateSkillSet/>} />
+                            <Route path="Skills" >
+                                <Route path="Add" element={<AddSkill/>} />
+                                <Route path="Update" element={<UpdateSkill/>} />
+                            </Route>
                         </Route>
                         <Route path="User" element={<User />} >
                             <Route path="Register" element={<Register />} />
@@ -58,6 +66,13 @@ function App() {
                             <Route path="Logout" element={<Logout />} />
                             <Route path="Profile" element={<PrivateRoute><Profile /> </PrivateRoute>} />
                             <Route path="UpdateProfile" element={<PrivateRoute><UpdateProfile /> </PrivateRoute>} />
+                            <Route path="UpdatePassword" element={<PrivateRoute><UpdatePassword /> </PrivateRoute>} />
+                            <Route path="Roles">
+
+                            </Route>
+                            <Route path="Skills">
+
+                            </Route>
                         </Route>
                         <Route path="Notifications" element={<Notifications />} />
 

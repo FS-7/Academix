@@ -1,5 +1,6 @@
 from flask import Blueprint, make_response, request
 from utils import CODES, db, execute
+import json
 
 skillset = Blueprint("skillset", __name__)
 
@@ -9,7 +10,8 @@ def index():
 
 @skillset.route("/Add", methods=["POST"])
 def SkillSetAdd():
-    NAME = request.form["name"]
+    data = json.loads(request.data)
+    NAME = data["name"]
 
     res = CODES.FAILED
     try:
@@ -18,25 +20,8 @@ def SkillSetAdd():
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
+            db.close()
             res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
-
-@skillset.route("/Read", methods=["GET"])
-def SkillSetRead():
-    ID = request.GET["id"]
-
-    res = CODES.FAILED
-    try:
-        sql = "SELECT * FROM SKILLSET WHERE ID=%(ID)s);"
-        val = {"ID": ID}
-        cursor = execute(sql, val)
-        for c in cursor:
-            res = {"ID": c[0], "NAME": c[1]}
-        db.commit()
-        return make_response(res)
     except:
         res = CODES.SQL_ERROR
         print()
@@ -51,6 +36,7 @@ def SkillSetReadAll():
         for c in cursor:
             res.append({"ID": c[0], "NAME": c[1]})
         db.commit()
+        db.close()
         return make_response(res)
     except:
         res = CODES.SQL_ERROR
@@ -59,17 +45,18 @@ def SkillSetReadAll():
 
 @skillset.route("/Update", methods=["POST"])
 def SkillSetUpdate():
-    ID = request.form["id"]
-    NEWID = request.form["newid"]
-    NEWNAME = request.form["newname"]
+    data = json.loads(request.data)
+    ID = data["id"]
+    NEWNAME = data["newname"]
     
     res = CODES.FAILED
     try:
-        sql = "UPDATE SKILLSET SET ID=%(NEWID)s, NAME=%(NEWNAME)s WHERE ID=%(ID)s);"
-        val = {"ID": ID, "NEWID": NEWID, "NEWNAME": NEWNAME}
+        sql = "UPDATE SKILLSET SET NAME=%(NEWNAME)s WHERE ID=%(ID)s;"
+        val = {"ID": ID, "NEWNAME": NEWNAME}
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
+            db.close()
             res = CODES.SUCCESS
     except:
         res = CODES.SQL_ERROR
@@ -78,7 +65,8 @@ def SkillSetUpdate():
 
 @skillset.route("/Remove", methods=["POST"])
 def SkillSetRemove():
-    ID = request.form["id"]
+    data = json.loads(request.data)
+    ID = data["id"]
     
     res = CODES.FAILED
     try:
@@ -86,16 +74,18 @@ def SkillSetRemove():
         val = {"ID": ID}
         execute(sql, val)
         db.commit()
+        db.close()
         res = CODES.SUCCESS
     except:
         res = CODES.SQL_ERROR
         print()
     return make_response(str(res))
 
-@skillset.route("/SkillAdd", methods=["POST"])
+@skillset.route("/skill/Add", methods=["POST"])
 def SkillAdd():
-    NAME = request.form["name"]
-    SKILLSET = request.form["skillset"]
+    data = json.loads(request.data)
+    NAME = data["name"]
+    SKILLSET = data["skillset"]
 
     res = CODES.FAILED
     try:
@@ -104,68 +94,54 @@ def SkillAdd():
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
+            db.close()
             res = CODES.SUCCESS
     except:
         res = CODES.SQL_ERROR
         print()
     return make_response(str(res))
 
-@skillset.route("/SkillRead", methods=["GET"])
-def SkillRead():
-    ID = request.form["id"]
-
-    res = CODES.FAILED
-    try:
-        sql = "SELECT * FROM SKILLS WHERE ID=%(ID)s);"
-        val = {"ID": ID}
-        cursor = execute(sql, val)
-        for c in cursor:
-            res = {"ID": c[0], "NAME": c[1], "SKILLSET": c[2]}
-        db.commit()
-        return make_response(res)
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
-
-@skillset.route("/SkillReadAll", methods=["GET"])
+@skillset.route("/skill/ReadAll", methods=["GET"])
 def SkillReadAll():
     res = []
     try:
         sql = "SELECT * FROM SKILLS;"
         cursor = execute(sql)
-        for c in cursor:
+        for c in cursor.fetchall():
             res.append({"ID": c[0], "NAME": c[1], "SKILLSET": c[2]})
         db.commit()
+        db.close()
         return make_response(res)
-    except:
+    except TypeError:
         res = CODES.SQL_ERROR
         print()
     return make_response(str(res))
 
-@skillset.route("/SkillUpdate", methods=["POST"])
+@skillset.route("/skill/Update", methods=["POST"])
 def SkillUpdate():
-    ID = request.form["id"]
-    NEWID = request.form["newid"]
-    NEWNAME = request.form["newname"]
-    NEWSKILLSET = request.form["newskillset"]
+    data = json.loads(request.data)
+    ID = data["id"]
+    NEWNAME = data["newname"]
+    NEWSKILLSET = data["newskillset"]
 
     res = CODES.FAILED
     try:
-        sql = "UPDATE SKILLS SET ID=%(NEWID)s, NAME=%(NEWNAME)s, SKILLSET=%(NEWSKILLSET)s WHERE ID=%(ID)s);"
-        val = {"ID": ID, "NEWID": NEWID, "NEWNAME": NEWNAME, "NEWSKILLSET": NEWSKILLSET}
+        sql = "UPDATE SKILLS SET NAME=%(NEWNAME)s, SKILLSET=%(NEWSKILLSET)s WHERE ID=%(ID)s);"
+        val = {"ID": ID, "NEWNAME": NEWNAME, "NEWSKILLSET": NEWSKILLSET}
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
+            db.close()
             res = CODES.SUCCESS
     except:
         res = CODES.SQL_ERROR
         print()
     return res
 
-@skillset.route("/SkillRemove", methods=["POST"])
+@skillset.route("/skill/Remove", methods=["POST"])
 def SkillRemove():
-    ID = request.form["id"]
+    data = json.loads(request.data)
+    ID = data["id"]
     
     res = CODES.FAILED
     try:
@@ -173,6 +149,7 @@ def SkillRemove():
         val = {"ID": ID}
         execute(sql, val)
         db.commit()
+        db.close()
         res = CODES.SUCCESS
     except:
         res = CODES.SQL_ERROR

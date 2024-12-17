@@ -4,7 +4,8 @@ export function validateEmail(email: string){
         return false
     if(email.length > 32)
         return false
-    if(email != RegExp(""))
+    const regex = new RegExp('^[^@]+@[^@]+\.[^@]+$');
+    if(!regex.test(email))
         return false
     return true
 }
@@ -14,7 +15,8 @@ export function validatePhone(phone: string){
         return false
     if(phone.length != 10)
         return false
-    if(phone != RegExp(""))
+    const regex = new RegExp('^[0-9\-\+]{10}$');
+    if(!regex.test(phone))
         return false
     return true
 }
@@ -22,11 +24,10 @@ export function validatePhone(phone: string){
 export function validatePassword(password: string, password2: string=password){
     if(password == null)
         return false
-    if(password.length < 8)
+    const regex = new RegExp("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,32}$")
+    if(!regex.test(password))
         return false
-    if(password.length > 32)
-        return false
-    if(password == password2)
+    if(password != password2)
         return false
     return true
 }

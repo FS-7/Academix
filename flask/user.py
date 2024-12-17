@@ -25,6 +25,7 @@ def Register():
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
+            db.close()
             res = make_response({"status": 200})
     except:
         res = CODES.SQL_ERROR
@@ -49,10 +50,14 @@ def Login():
 
         for x in cursor:
             id = x[0]
+        db.commit()
+        
         if(id != 0): 
-            if(deletePrevSessions(id) == CODES.SUCCESS):
+            temp = deletePrevSessions(id)
+            if(temp == CODES.SUCCESS):
                 [res, TOKEN]=createSession(id)
                 if(res == CODES.SUCCESS):
+                    db.close()
                     res = make_response({"status": 200})
                     res.set_cookie("TOKEN", TOKEN)
                     return res
@@ -79,6 +84,7 @@ def Logout():
         val = { "ID": User }
         execute(sql, val)
         db.commit()
+        db.close()
         res = make_response({"status": 200})
         res.set_cookie("TOKEN", "")
         return res
@@ -107,6 +113,8 @@ def Profile():
         for x in cursor:
             profile = x
         res = { "status": 200, "name": profile[0], "email": profile[1], "phone": profile[2] }
+        db.commit()
+        db.close()
         return make_response(res)
     except:
         res = CODES.SQL_ERROR
@@ -140,6 +148,7 @@ def UpdateProfile():
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
+            db.close()
             res = CODES.SUCCESS
     except:
         res = CODES.SQL_ERROR
@@ -175,6 +184,7 @@ def UpdatePassword():
             cursor = execute(sql, val)
             if(cursor.rowcount == 1):
                 db.commit()
+                db.close()
                 res = CODES.SUCCESS
     except:
         res = CODES.SQL_ERROR
