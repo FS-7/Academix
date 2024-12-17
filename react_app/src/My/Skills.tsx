@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ReadSkill } from "./Skillset";
 
 const menuItems = [
-    {path: "/skills/Add", text: "Add Skills", comp: <AddUserSkill/>}
+    
 ]
 
 export function Skills(){

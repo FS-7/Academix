@@ -7,10 +7,10 @@ import { AddAttendance, Attendance, TrainFR } from "./My/Attendance.tsx";
 import { CreateDepartment, Department, UpdateDepartment } from "./My/Departments.tsx";
 import { Permission } from "./My/Permissions.tsx";
 import { Progress } from "./My/Progress.tsx";
-import { AddRoles, GetMyRequests, GetRequests, MyRoles, ReadRoles, Roles, SetUserRole, UpdateRoles } from "./My/Roles.tsx";
-import { AddSkill, AddSkillSet, DeleteSkill, DeleteSkillSet, SkillSet, UpdateSkill, UpdateSkillSet } from "./My/Skillset.tsx";
-import { AddUserSkill, Skills, UpdateUserSkill } from "./My/Skills.tsx";
-import { Login, Logout, Profile, Register, UpdatePassword, UpdateProfile, User } from "./My/User.tsx";
+import { AddRoles, Roles,  UpdateRoles } from "./My/Roles.tsx";
+import { AddSkill, AddSkillSet, SkillSet, UpdateSkill, UpdateSkillSet } from "./My/Skillset.tsx";
+import { AddUserSkill, Skills } from "./My/Skills.tsx";
+import { Login, Logout, Profile, Register, UpdatePassword, UpdateProfile, User, GetMyRequests, GetRequests, SetUserRole } from "./My/User.tsx";
 import { Notifications } from "./My/Notifications.tsx";
 import PageNotFound from "./shared/NotFound.tsx";
 
@@ -28,6 +28,10 @@ function App() {
                 <div className='w-auto h-5/6 flex '>
                     <Routes>
                         <Route path="/" index element={<Index />} />
+                        <Route path="Register" element={<Register />} />
+                        <Route path="Login" element={<Login />} />
+                        <Route path="Logout" element={<Logout />} />
+                        
                         <Route path="About" element={<About />} />
                         <Route path="Admin" element={<Admin/>} />
                         <Route path="Attendance" element={<Attendance />} >
@@ -42,11 +46,7 @@ function App() {
                         <Route path="Progress" element={<Progress />} />
                         <Route path="Roles" element={<Roles />} >
                             <Route path="Add" element={<AddRoles />}/>
-                            <Route path="Read" element={<ReadRoles />}/>
                             <Route path="Update" element={<UpdateRoles />}/>
-                            <Route path="SetUserRole" element={<SetUserRole />}/>
-                            <Route path="GetMyRequests" element={<GetMyRequests />}/>
-                            <Route path="GetRequests" element={<GetRequests />}/>
                         </Route>
                         <Route path="Skills" element={<Skills />} >
                             <Route path="Add"  element={<AddUserSkill />}/>
@@ -60,15 +60,18 @@ function App() {
                             </Route>
                         </Route>
                         <Route path="User" element={<User />} >
-                            <Route path="Register" element={<Register />} />
-                            <Route path="Login" element={<Login />} />
-                            <Route path="Logout" element={<Logout />} />
-                            <Route path="Profile" element={<PrivateRoute><Profile /> </PrivateRoute>} />
+                            <Route path="" element={<PrivateRoute><Profile /> </PrivateRoute>} />
                             <Route path="UpdateProfile" element={<PrivateRoute><UpdateProfile /> </PrivateRoute>} />
                             <Route path="UpdatePassword" element={<PrivateRoute><UpdatePassword /> </PrivateRoute>} />
                             <Route path="Roles">
-
+                                <Route path="SetUserRole" element={<SetUserRole />}/>
+                                <Route path="GetMyRequests" element={<GetMyRequests />}/>
+                                <Route path="GetRequests" element={<GetRequests />}/>
                             </Route>
+                            <Route path="Skills" >
+                                <Route path="Add"  element={<AddUserSkill />}/>
+                            </Route>
+                            
                         </Route>
                         <Route path="Notifications" element={<Notifications />} />
 
