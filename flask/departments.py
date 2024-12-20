@@ -1,104 +1,156 @@
 from flask import Blueprint, make_response, request
-from utils import CODES, db, execute
+from http import HTTPStatus
+from mysql import connector
+from utils import db, GetToken, GetUser, execute
 import json
 
 departments = Blueprint("departments", __name__)
 
 @departments.route("/", methods=["GET", "POST"])
 def index():
-    return make_response("Departments", str(CODES.SUCCESS))
+    return make_response("Departments")
 
 @departments.route("/Add", methods=["POST"])
 def Add():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
     data = json.loads(request.data)
     CODE = data["code"]
     NAME = data["name"]
 
-    res = CODES.FAILED
     try:
         sql = "INSERT INTO DEPARTMENTS(CODE, NAME) VALUES (%(CODE)s, %(NAME)s);"
         val = {"CODE": CODE, "NAME": NAME}
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
-            res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
-
-    return make_response(str(res))
-
-@departments.route("/Read", methods=["GET"])
-def Read():
-    CODE = request.GET["code"]
+            resBody = {}
+            resStatus = HTTPStatus.CREATED
     
-    res = CODES.FAILED
-    try:
-        sql = "SELECT * FROM DEPARTMENTS WHERE CODE=%(CODE)s;"
-        val = { "CODE": CODE }
-        cursor = execute(sql, val)
-        for c in cursor:
-            res = {"CODE": c[0], "NAME": c[1] }
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
 
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+    return make_response(resBody, resStatus)
 
 @departments.route("/ReadAll", methods=["GET"])
 def ReadAll():
-    res = CODES.FAILED
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
     deptList = []
     try:
         sql = "SELECT * FROM DEPARTMENTS;"
         cursor = execute(sql)
         for c in cursor:
             deptList.append({"CODE": c[0], "NAME": c[1] })
-        res = deptList
-        return make_response(res)
+        resBody = deptList
+        resStatus = HTTPStatus.OK
         
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    
-    return make_response(str(res))
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
+
 
 @departments.route("/Update", methods=["POST"])
 def Update():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
     data = json.loads(request.data)
-    CODE = data["code"]
-    NEWCODE = data["newcode"]
-    NEWNAME = data["newname"]
 
-    res = CODES.FAILED
+    CODE = data["code"]
+    NEWNAME = data["newname"]
     try:
-        sql = "UPDATE DEPARTMENTS SET CODE=%(NEWCODE)s, NAME=%(NEWNAME)s WHERE CODE=%(CODE)s;"
-        val = { "CODE": CODE, "NEWCODE": NEWCODE, "NEWNAME": NEWNAME }
+        sql = "UPDATE DEPARTMENTS SET NAME=%(NEWNAME)s WHERE CODE=%(CODE)s;"
+        val = { "CODE": CODE, "NEWNAME": NEWNAME }
         cursor = execute(sql, val)
         if(cursor.rowcount >= 1):
             db.commit()
-            res = CODES.SUCCESS
+            resBody = {}
+            resStatus = HTTPStatus.OK
 
-    except:
-        res = CODES.SQL_ERROR
-        print()
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
 
-    return make_response(str(res))
+    return make_response(resBody, resStatus)
+
 
 @departments.route("/Remove", methods=["POST"])
 def Delete():
-    data = json.loads(request.data)
-    CODE = data["code"]
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
     
-    res = CODES.FAILED
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
+    data = json.loads(request.data)
+
+    CODE = data["code"]
     try:
         sql = "DELETE FROM DEPARTMENTS WHERE CODE=%(CODE)s;"
         val = { "CODE": CODE }
         cursor = execute(sql, val)
         db.commit()
-        res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
+        resBody = {}
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
 
-    return make_response(str(res))
+    return make_response(resBody, resStatus)

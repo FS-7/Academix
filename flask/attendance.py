@@ -1,5 +1,7 @@
 from flask import Blueprint, make_response, request
-from utils import CODES, db, GetUser, GetToken, execute
+from http import HTTPStatus
+from mysql import connector
+from utils import db, GetUser, GetToken, execute
 import json
 
 attendance = Blueprint("attendance", __name__)
@@ -14,10 +16,16 @@ def Train():
 
 @attendance.route("/Add", methods=["POST"])
 def AddAttendance():
+    resBody = {}
+    resStatus = HTTPStatus.UNAUTHORIZED
+    
     data = json.loads(request.data)
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(str(CODES.UNAUTHORIZED))
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     ATTMOD = GetUser(TOKEN)
     LOCLAT = data["loclat"]
@@ -27,20 +35,28 @@ def AddAttendance():
     STUDENT = data["usn"]
 
     if(Recognize(IMG, STUDENT)):
-        make_response(str(CODES.UNAUTHORIZED))
-
-    res = CODES.FAILED
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
     try:
         sql = "INSERT INTO ATTENDANCE(STUDENT, ATTMOD, LOCLAT, LOCLON, SUBJECT) VALUES (%(STUDENT)s, %(ATTMOD)s, %(LOCLAT)s, %(LOCLON)s, %(SUBJECT)s);"
         val = { "STUDENT": STUDENT, "ATTMOD": ATTMOD, "LOCLAT": LOCLAT, "LOCLON": LOCLON, "SUBJECT": SUBJECT }
         cursor = execute(sql, val)
         db.commit()
-        res = CODES.SUCCESS
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
 
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
 
 def Recognize(img, usn):
     return True

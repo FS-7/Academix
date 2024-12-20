@@ -1,5 +1,7 @@
 from flask import Blueprint, make_response, request
-from utils import CODES, db, execute, GetUser, GetToken
+from http import HTTPStatus
+from mysql import connector
+from utils import db,  GetUser, GetToken, execute
 import json
 
 roles = Blueprint("roles", __name__)
@@ -10,148 +12,274 @@ def index():
 
 @roles.route('/Create', methods=["POST"])
 def Create():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
     data = json.loads(request.data)
     NAME = data["name"]
     
-    res = CODES.FAILED
     try:
         sql = "INSERT INTO ROLES(NAME) VALUES(%(NAME)s);"
         val = { "NAME": NAME }
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
-            res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+            resBody = {}
+            resStatus = HTTPStatus.CREATED
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/Read', methods=["GET"])
 def Read():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
     data = json.loads(request.data)
     ID = data["id"]
     
-    res = CODES.FAILED
     try:
         sql = "SELECT * FROM ROLES WHERE ID=%(ID)s;"
         val = { "ID": ID }
         cursor = execute(sql, val)
         for c in cursor:
-            res = c[0]
+            role = c[0]
         db.commit()
-        return make_response(res)
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+        resBody = role
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/ReadAll', methods=["GET"])
 def ReadAll():
-    res = []
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
+    roles = []
     try:
         sql = "SELECT * FROM ROLES;"
         cursor = execute(sql)
         db.commit()
         for c in cursor.fetchall():
-            res.append({"ID": c[0], "NAME": c[1]})
-        return make_response(res)
-    except NameError:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+            roles.append({"ID": c[0], "NAME": c[1]})
+        resBody = roles
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/Update', methods=["POST"])
 def Update():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
     data = json.loads(request.data)
     ID = data["id"]
-    NEWID = data["newid"]
     NEWNAME = data["name"]
     
-    res = CODES.FAILED
     try:
-        sql = "UPDATE ROLES SET ID=%(NEWID)s, NAME=%(NEWNAME)s WHERE ID=%(ID)s;"
-        val = { "NEWID": NEWID, "NEWNAME":NEWNAME, "ID": ID }
+        sql = "UPDATE ROLES SET NAME=%(NEWNAME)s WHERE ID=%(ID)s;"
+        val = { "NEWNAME":NEWNAME, "ID": ID }
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
-            res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+            resBody = {}
+            resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/Delete', methods=["POST"])
 def Delete():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
     ID = request.form["id"]
 
-    res = CODES.FAILED
     try:
         sql = "DELETE FROM ROLES WHERE ID=%(ID)s;"
         val = { "ID": ID }
         execute(sql, val)
         db.commit()
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+        resBody = {}
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 
 @roles.route('/MyRoles', methods=["GET"])
 def MyRole():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(str(CODES.UNAUTHORIZED))
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     User = GetUser(TOKEN)
 
     res = []
     try:
-        sql = "SELECT * FROM AUTHORIZATION WHERE ID=%(ID)s AND STATUS='APPROVED'"
+        sql = "SELECT ROLE FROM AUTHORIZATION WHERE ID=%(ID)s AND STATUS='APPROVED'"
         val = { "ID": User }
         cursor = execute(sql, val)
-        res = cursor.fetchall()
-        if(cursor.rowcount):
-            db.commit()
-            return make_response(res)
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+        for r in cursor:
+            res.append({"ROLE": r[0]})
+        db.commit()
+        resBody = {}
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/RemoveMyRole', methods=["POST"])
 def RemoveMyRole():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(str(CODES.UNAUTHORIZED))
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     data = json.loads(request.data)
     ID = data["id"]
     User = GetUser(TOKEN)
 
-    res = CODES.FAILED
     try:
         sql = "DELETE FROM AUTHORIZATION WHERE ID=%(ID)s AND USER=%(USER)s;"
         val = { "ID": ID, "USER": User }
         cursor = execute(sql, val)
         db.commit()
-        res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+        resBody = {}
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 
 @roles.route('/CreateRequest', methods=["POST"])
 def CreateRequest():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(str(CODES.UNAUTHORIZED))
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     User = GetUser(TOKEN)
-    ROLE = request.form["role"]
-    APPROVER = request.form["approver"]
+    data = json.loads(request.data)
+    ROLES = data["roles"]
+    APPROVER = data["approver"]
 
-    res = CODES.FAILED
     try:
         sql = "SELECT ID FROM USER WHERE EMAIL=%(EMAIL)s"
         val = { "EMAIL": APPROVER }
@@ -159,68 +287,112 @@ def CreateRequest():
         for x in cursor:
             APPROVER_ID = x[0]
 
-        sql = "INSERT INTO AUTHORIZATION(USER, ROLE, APPROVER) VALUES (%(USER)s, %(ROLE)s, %(APPROVER)s)"
-        val = { "USER": User, "ROLE": ROLE, "APPROVER": APPROVER_ID}
-        cursor = execute(sql, val)
-        if(cursor.rowcount):
+        for ROLE in ROLES:
+            sql = "INSERT INTO AUTHORIZATION(USER, ROLE, APPROVER) VALUES (%(USER)s, %(ROLE)s, %(APPROVER)s);"
+            val = { "USER": User, "ROLE": ROLE, "APPROVER": APPROVER_ID}
+            cursor = execute(sql, val)
+        if(cursor.rowcount == len(ROLES)):
             db.commit()
-            res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+            resBody = {}
+            resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/GetMyRequest', methods=["GET"])
 def GetMyRequest():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
     
     TOKEN = GetToken()
-    if(TOKEN in ('', None)):
-        return make_response(str(CODES.UNAUTHORIZED))
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     User = GetUser(TOKEN)
 
-    res = []
+    myreq = []
     try:
         sql = "SELECT USER, ROLE, STATUS FROM AUTHORIZATION WHERE STATUS='P' AND APPROVER=%(USER)s"
         val = { "USER": User }
         cursor = db.cursor()
         cursor.execute(sql, val)
         for r in cursor:
-            res.append({"USER": r[0], "ROLE": r[1], "APPROVER": r[2]})
-        return make_response(res)
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+            myreq.append({"USER": r[0], "ROLE": r[1], "APPROVER": r[2]})
+        resBody = myreq
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/GetRequest', methods=["GET"])
 def GetRequest():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     TOKEN = GetToken()
-    if(TOKEN in ('', None)):
-        return make_response({"status": str(CODES.UNAUTHORIZED)})
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     User = GetUser(TOKEN)
 
-
-    res = []
+    req = []
     try:
         sql = "SELECT APPROVER, ROLE, STATUS FROM AUTHORIZATION  STATUS='P' WHERE USER=%(USER)s"
         val = { "USER": User }
         cursor = db.cursor()
         cursor.execute(sql, val)
         for r in cursor:
-            res.append({"APPROVER": r[0], "ROLE": r[1], "STATUS": r[2]})
-        return make_response(res)
-    except ValueError:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+            req.append({"APPROVER": r[0], "ROLE": r[1], "STATUS": r[2]})
+        resBody = req
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/RemoveRequest', methods=["POST"])
 def RemoveRequest():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(CODES.UNAUTHORIZED)
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     User = GetUser(TOKEN)
     ID = request.form["id"]
@@ -232,21 +404,36 @@ def RemoveRequest():
         cursor = db.cursor()
         cursor.execute(sql, val)
         db.commit()
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+        resBody = {}
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/Approve', methods=["POST"])
 def Approve():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(CODES.UNAUTHORIZED)
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     ID = request.form["id"]
     User = GetUser(TOKEN)
     
-    res = CODES.FAILED
     try:
         sql = "SELECT APPROVER FROM AUTHORIZATION WHERE ID=%(ID)s"
         val = { "ID": ID }
@@ -259,23 +446,36 @@ def Approve():
             cursor = execute(sql, val)
             if(cursor.rowcount == 1):
                 db.commit()
-                res = CODES.SUCCESS
+                resBody = {}
+                resStatus = HTTPStatus.OK
 
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
 
 @roles.route('/Deny', methods=["POST"])
 def Deny():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(CODES.UNAUTHORIZED)
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     ID = request.form["id"]
     User = GetUser(TOKEN)
     
-    res = CODES.FAILED
     try:
         sql = "SELECT APPROVER FROM AUTHORIZATION WHERE ID=%(ID)s"
         val = { "ID": ID }
@@ -287,9 +487,17 @@ def Deny():
             sql = "UPDATE AUTHORIZATION SET STATUS='D' WHERE ID=%(ID)s"
             cursor = execute(sql, val)
             db.commit()
-            res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
+            resBody = {}
+            resStatus = HTTPStatus.OK
     
-    return make_response(str(res))
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)

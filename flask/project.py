@@ -1,17 +1,17 @@
 from flask import Blueprint, make_response, request
 from http import HTTPStatus
 from mysql import connector
-from utils import db, GetToken, GetUser, execute
 import json
+from utils import db, GetToken, GetUser, execute
 
-skillset = Blueprint("skillset", __name__)
+project = Blueprint("project", __name__)
 
-@skillset.route("/", methods=["GET", "POST"])
+@project.route("/", methods=["GET", "POST"])
 def index():
-    return make_response("SkillSet")
+    return make_response("project")
 
-@skillset.route("/Add", methods=["POST"])
-def SkillSetAdd():
+@project.route("/getAnC", methods=["GET"])
+def getAnC():
     resBody = {}
     resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
     
@@ -22,126 +22,23 @@ def SkillSetAdd():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    data = json.loads(request.data)
-    NAME = data["name"]
+    User = GetUser(TOKEN)
 
     try:
-        sql = "INSERT INTO SKILLSET(NAME) VALUES(%(NAME)s);"
-        val = {"NAME": NAME}
+        res = {}
+        sql = "SELECT EMAIL FROM USERS WHERE ID=%(USER)s;"
+        val = {"USER": User}
         cursor = execute(sql, val)
-        if(cursor.rowcount == 1):
-            db.commit()
-            db.close()
-            resBody = {}
-            resStatus = HTTPStatus.CREATED
-    
-    except connector.ProgrammingError as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except connector.Error as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except Exception as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-
-    return make_response(resBody, resStatus)
-
-@skillset.route("/ReadAll", methods=["GET"])
-def SkillSetReadAll():
-    resBody = {}
-    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-    
-    TOKEN = GetToken()
-    User = GetUser(TOKEN)
-    if(User == -1):
-        resBody = {}
-        resStatus = HTTPStatus.UNAUTHORIZED
-        return make_response(resBody, resStatus)
-    
-    skillset = []
-    try:
-        sql = "SELECT * FROM SKILLSET;"
-        cursor = execute(sql)
         for c in cursor:
-            skillset.append({"ID": c[0], "NAME": c[1]})
-        db.commit()
-        db.close()
-        resBody = skillset
-        resStatus = HTTPStatus.OK
-    
-    except connector.ProgrammingError as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except connector.Error as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except Exception as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
+            EMAIL = c[0]
 
-    return make_response(resBody, resStatus)
-
-@skillset.route("/Update", methods=["POST"])
-def SkillSetUpdate():
-    resBody = {}
-    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-    
-    TOKEN = GetToken()
-    User = GetUser(TOKEN)
-    if(User == -1):
-        resBody = {}
-        resStatus = HTTPStatus.UNAUTHORIZED
-        return make_response(resBody, resStatus)
-    
-    data = json.loads(request.data)
-    ID = data["id"]
-    NEWNAME = data["newname"]
-    
-    try:
-        sql = "UPDATE SKILLSET SET NAME=%(NEWNAME)s WHERE ID=%(ID)s;"
-        val = {"ID": ID, "NEWNAME": NEWNAME}
+        sql = "SELECT * FROM PROJECT WHERE TEAMLEAD=%(EMAIL)s;"
+        val = {"EMAIL": EMAIL}
         cursor = execute(sql, val)
-        if(cursor.rowcount == 1):
-            db.commit()
-            db.close()
-            resBody = {}
-            resStatus = HTTPStatus.OK
-    
-    except connector.ProgrammingError as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except connector.Error as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except Exception as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-
-    return make_response(resBody, resStatus)
-
-@skillset.route("/Remove", methods=["POST"])
-def SkillSetRemove():
-    resBody = {}
-    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-    
-    TOKEN = GetToken()
-    User = GetUser(TOKEN)
-    if(User == -1):
-        resBody = {}
-        resStatus = HTTPStatus.UNAUTHORIZED
-        return make_response(resBody, resStatus)
-    
-    data = json.loads(request.data)
-    ID = data["id"]
-    
-    try:
-        sql = "DELETE * FROM SKILLSET WHERE ID=%(ID)s);"
-        val = {"ID": ID}
-        execute(sql, val)
+        for c in cursor:
+            res = {"APPROVER": c[0], "COORDINATOR": c[1]}
         db.commit()
-        db.close()
-        resBody = {}
+        resBody = res
         resStatus = HTTPStatus.OK
     
     except connector.ProgrammingError as e:
@@ -156,8 +53,7 @@ def SkillSetRemove():
 
     return make_response(resBody, resStatus)
 
-@skillset.route("/skill/Add", methods=["POST"])
-def SkillAdd():
+def Register():
     resBody = {}
     resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
     
@@ -168,20 +64,20 @@ def SkillAdd():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
+    User = GetUser(TOKEN)
     data = json.loads(request.data)
     NAME = data["name"]
-    LINK = data["link"]
-    SKILLSET = data["skillset"]
+    TEAMLEAD = data["teamlead"]
+    MEMBER1 = data["member1"]
+    MEMBER2 = data["member2"]
+    MEMBER3 = data["member3"]
+    APPROVER = data["approver"]
+    COORDINATOR = data["coordinator"]
 
     try:
-        sql = "INSERT INTO SKILLS(NAME, LINK, SKILLSET) VALUES(%(NAME)s, %(LINK)s, %(SKILLSET)s);"
-        val = {"NAME": NAME, "LINK": LINK,"SKILLSET": SKILLSET}
+        sql = "INSERT INTO PROJECT(NAME, TEAMLEAD, MEMBER1, MEMBER2, MEMBER3, APPROVER, COORDINATOR) VALUES(%(NAME)s, %(TEAMLEAD)s, %(MEMBER1)s, %(MEMBER2)s, %(MEMBER3)s, %(APPROVER)s, %(COORDINATOR)s);"
+        val = {"NAME": NAME, "TEAMLEAD": TEAMLEAD, "MEMBER1": MEMBER1, "MEMBER2": MEMBER2, "MEMBER3": MEMBER3, "APPROVER": APPROVER, "COORDINATOR": COORDINATOR}
         cursor = execute(sql, val)
-        if(cursor.rowcount == 1):
-            db.commit()
-            db.close()
-            resBody = {}
-            resStatus = HTTPStatus.CREATED
     
     except connector.ProgrammingError as e:
         resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
@@ -195,8 +91,8 @@ def SkillAdd():
 
     return make_response(resBody, resStatus)
 
-@skillset.route("/skill/ReadAll", methods=["GET"])
-def SkillReadAll():
+@project.route("/UpdatePhaseI", methods=["GET", "POST"])
+def UpdatePhaseI():
     resBody = {}
     resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
     
@@ -207,56 +103,13 @@ def SkillReadAll():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    skills = []
-    try:
-        sql = "SELECT S.ID, S.NAME AS NAME, SS.ID AS SID, SS.NAME AS SKILLSET FROM SKILLS AS S, SKILLSET AS SS WHERE S.SKILLSET=SS.ID;"
-        cursor = execute(sql)
-        for c in cursor.fetchall():
-            skills.append({"ID": c[0], "NAME": c[1], "SKILLSET": c[2], "SID": c[3],"SID": c[4]})
-        db.commit()
-        db.close()
-        resBody = skills
-        resStatus = HTTPStatus.OK
-    
-    except connector.ProgrammingError as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except connector.Error as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except Exception as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-
-    return make_response(resBody, resStatus)
-
-@skillset.route("/skill/Update", methods=["POST"])
-def SkillUpdate():
-    resBody = {}
-    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-    
-    TOKEN = GetToken()
     User = GetUser(TOKEN)
-    if(User == -1):
-        resBody = {}
-        resStatus = HTTPStatus.UNAUTHORIZED
-        return make_response(resBody, resStatus)
-    
     data = json.loads(request.data)
-    ID = data["id"]
-    NEWLINK = data["newlink"]
-    NEWNAME = data["newname"]
-    NEWSKILLSET = data["newskillset"]
 
     try:
-        sql = "UPDATE SKILLS SET NAME=%(NEWNAME)s, SKILLSET=%(NEWSKILLSET)s WHERE ID=%(ID)s);"
-        val = {"ID": ID, "NEWLINK": NEWLINK, "NEWNAME": NEWNAME, "NEWSKILLSET": NEWSKILLSET}
+        sql = "UPDATE PROJECT SET APPROVER_STATUS=%()s WHERE APPROVER=%()s;"
+        val = {}
         cursor = execute(sql, val)
-        if(cursor.rowcount == 1):
-            db.commit()
-            db.close()
-            resBody = {}
-            resStatus = HTTPStatus.OK
     
     except connector.ProgrammingError as e:
         resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
@@ -270,8 +123,8 @@ def SkillUpdate():
 
     return make_response(resBody, resStatus)
 
-@skillset.route("/skill/Remove", methods=["POST"])
-def SkillRemove():
+@project.route("/UpdatePhaseII", methods=["GET", "POST"])
+def UpdatePhaseII():
     resBody = {}
     resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
     
@@ -282,17 +135,13 @@ def SkillRemove():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
+    User = GetUser(TOKEN)
     data = json.loads(request.data)
-    ID = data["id"]
-    
+
     try:
-        sql = "DELETE * FROM SKILLS WHERE ID=%(ID)s);"
-        val = {"ID": ID}
-        execute(sql, val)
-        db.commit()
-        db.close()
-        resBody = {}
-        resStatus = HTTPStatus.OK
+        sql = "UPDATE PROJECT SET APPROVER_STATUS=%()s WHERE APPROVER=%()s;"
+        val = {}
+        cursor = execute(sql, val)
     
     except connector.ProgrammingError as e:
         resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
@@ -305,3 +154,101 @@ def SkillRemove():
         print(e)
 
     return make_response(resBody, resStatus)
+
+
+@project.route("/ShowProject", methods=["GET", "POST"])
+def ShowProgress():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
+    User = GetUser(TOKEN)
+    data = json.loads(request.data)
+
+    try:
+        sql = "UPDATE PROJECT SET APPROVER_STATUS=%()s WHERE APPROVER=%()s;"
+        val = {}
+        cursor = execute(sql, val)
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
+
+@project.route("Accept", methods=["POST"])
+def Accept():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
+    User = GetUser(TOKEN)
+    data = json.loads(request.data)
+
+    try:
+        sql = "UPDATE PROJECT SET APPROVER_STATUS=%()s WHERE APPROVER=%()s;"
+        val = {}
+        cursor = execute(sql, val)
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
+
+@project.route("Deny", methods=["POST"])
+def Deny():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
+    User = GetUser(TOKEN)
+    data = json.loads(request.data)
+
+    try:
+        sql = "UPDATE PROJECT SET APPROVER_STATUS=%()s WHERE APPROVER=%()s;"
+        val = {}
+        cursor = execute(sql, val)
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
+

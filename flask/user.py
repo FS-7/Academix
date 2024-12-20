@@ -1,5 +1,7 @@
 from flask import Blueprint, make_response, request, session
-from utils import CODES, db, GetUser, GetToken, execute, deletePrevSessions, createSession
+from http import HTTPStatus
+from mysql import connector
+from utils import db, execute, validateEmail, validatePhone, validatePassword, deletePrevSessions, createSession, GetUser, GetToken
 from hashlib import sha256
 import json
 
@@ -11,38 +13,71 @@ def index():
 
 @user.route("/Register", methods=["POST"])
 def Register():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     data = json.loads(request.data)
     NAME = data["name"]
     EMAIL = str.lower(data["email"])
+    if(not validateEmail(EMAIL)):
+        resStatus = HTTPStatus.BAD_REQUEST
+        return make_response(resBody, resStatus)
+    
     PHONE = data["phone"]
+    if(not validatePhone(PHONE)):
+        resStatus = HTTPStatus.BAD_REQUEST
+        return make_response(resBody, resStatus)
+    
     PASSWORD = data["password"]
+    if(not validatePassword(PASSWORD)):
+        resStatus = HTTPStatus.BAD_REQUEST
+        return make_response(resBody, resStatus)
+    
     PASS_HASH = sha256(PASSWORD.encode('utf-8')).hexdigest()
     
     try:
-        res = CODES.FAILED
         sql = "INSERT INTO USERS(NAME, EMAIL, PHONE, PASS_HASH) VALUES (%(NAME)s, %(EMAIL)s, %(PHONE)s, %(PASS_HASH)s);"
         val = { "NAME": NAME, "EMAIL": EMAIL, "PHONE": PHONE, "PASS_HASH": PASS_HASH }
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
             db.close()
-            res = make_response({"status": 200})
-    except:
-        res = CODES.SQL_ERROR
-        print()
-        
-    return make_response(str(res))
+            resBody = {}
+            resStatus = HTTPStatus.CREATED
 
-@user.route("/Login", methods=["GET", "POST"])
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
+
+@user.route("/Login", methods=["POST"])
 def Login():
+    id=0
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+
     data = json.loads(request.data)
+
     EMAIL = str.lower(data["email"])
+    if(not validateEmail(EMAIL)):
+        resStatus = HTTPStatus.BAD_REQUEST
+        return make_response(resBody, resStatus)
+    
     PASSWORD = data["password"]
+    if(not validatePassword):
+        resStatus = HTTPStatus.BAD_REQUEST
+        return make_response(resBody, resStatus)
+    
     PASS_HASH = sha256(PASSWORD.encode('utf-8')).hexdigest()
 
-    id=0
     try:
-        res = CODES.FAILED
         sql = "SELECT ID FROM USERS WHERE EMAIL=%(EMAIL)s AND PASS_HASH=%(PASS_HASH)s;"
         val = { "EMAIL": EMAIL, "PASS_HASH": PASS_HASH }
         cursor = execute(sql, val)
@@ -54,88 +89,119 @@ def Login():
         
         if(id != 0): 
             temp = deletePrevSessions(id)
-            if(temp == CODES.SUCCESS):
+            if(temp):
                 [res, TOKEN]=createSession(id)
-                if(res == CODES.SUCCESS):
+                if(res):
                     db.close()
-                    res = make_response({"status": 200})
-                    res.set_cookie("TOKEN", TOKEN)
-                    return res
-        
-    except:
-        res = CODES.SQL_ERROR
-        print()
+                    session["TOKEN"] = TOKEN
+                    resBody = {}
+                    resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
 
-    return make_response(str(res))
+    return make_response(resBody, resStatus)
 
 @user.route("/Logout", methods=["POST"])
 def Logout():
-    TOKEN=GetToken()
-    if(TOKEN == ''):
-        return make_response(str(CODES.UNAUTHORIZED))
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
 
+    TOKEN=GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        return make_response({}, HTTPStatus.UNAUTHORIZED)
+    
     try:
-        res = CODES.FAILED
-        User = GetUser(TOKEN)
-        if(User == -1):
-            return make_response(str(CODES.FAILED))
-        
         sql = "DELETE FROM SESSION WHERE USER=%(ID)s;"
         val = { "ID": User }
         execute(sql, val)
         db.commit()
         db.close()
-        res = make_response({"status": 200})
-        res.set_cookie("TOKEN", "")
-        return res
-        
-    except ValueError:
-        res = CODES.SQL_ERROR
-        print()
+        session.pop("TOKEN")
+        resBody = {}
+        resStatus = HTTPStatus.OK
+                
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as mysql_error:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(mysql_error)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
 
-    return make_response(str(res))
+    return make_response(resBody, resStatus)
 
 @user.route("/Profile", methods=["GET"])
 def Profile():
-    TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(str(CODES.UNAUTHORIZED))
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
     
+    TOKEN = GetToken()
     User = GetUser(TOKEN)
     if(User == -1):
-            return make_response(str(CODES.FAILED))
-
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
     try:
-        res = CODES.FAILED
         sql = "SELECT NAME, EMAIL, PHONE FROM USERS WHERE ID=%(USER)s;"
         val = { "USER": User }
         cursor = execute(sql, val)
         for x in cursor:
             profile = x
-        res = { "status": 200, "name": profile[0], "email": profile[1], "phone": profile[2] }
         db.commit()
         db.close()
-        return make_response(res)
-    except:
-        res = CODES.SQL_ERROR
-        print()
+        resBody = { "name": profile[0], "email": profile[1], "phone": profile[2] }
+        resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
 
-    return make_response(str(res))
+    return make_response(resBody, resStatus)
 
 @user.route("/Update", methods=["POST"])
 def UpdateProfile():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(str(CODES.UNAUTHORIZED))
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     data = json.loads(request.data)
 
     NAME = data["name"]
     EMAIL = data["email"]
+    if(not validateEmail(EMAIL)):
+        resStatus = HTTPStatus.BAD_REQUEST
+        return make_response(resBody, resStatus)
+    
     PHONE = data["phone"]
+    if(not validatePhone(PHONE)):
+        resStatus = HTTPStatus.BAD_REQUEST
+        return make_response(resBody, resStatus)
     
     try:
-        res = CODES.FAILED
         sql = "SELECT USERS.ID FROM SESSION, USERS WHERE TOKEN=%(TOKEN)s;"
         val = { "TOKEN": TOKEN }
         cursor = execute(sql, val)
@@ -149,28 +215,49 @@ def UpdateProfile():
         if(cursor.rowcount == 1):
             db.commit()
             db.close()
-            res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
+            resBody = {}
+            resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
 
-    return make_response(str(res))
+    return make_response(resBody, resStatus)
 
 @user.route("/UpdatePassword", methods=["POST"])
 def UpdatePassword():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
     TOKEN = GetToken()
-    if(TOKEN == ''):
-        return make_response(str(CODES.UNAUTHORIZED))
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
     
     data = json.loads(request.data)
 
     oldPassword = data["oldpassword"]
+    if(validatePassword(oldPassword)):
+        resStatus = HTTPStatus.BAD_REQUEST
+        return make_response(resBody, resStatus)
+    
     newPassword = data["newpassword"]
+    if(validatePassword(newPassword)):
+        resStatus = HTTPStatus.BAD_REQUEST
+        return make_response(resBody, resStatus)
+    
     oldPassHash = sha256(oldPassword.encode('utf-8')).hexdigest()
     newPassHash = sha256(newPassword.encode('utf-8')).hexdigest()
 
     try:
-        res = CODES.FAILED
         sql = "SELECT USERS.ID, PASS_HASH FROM SESSION, USERS WHERE TOKEN=%(TOKEN)s;"
         val = { "TOKEN": TOKEN }
         cursor = execute(sql, val)
@@ -185,8 +272,17 @@ def UpdatePassword():
             if(cursor.rowcount == 1):
                 db.commit()
                 db.close()
-                res = CODES.SUCCESS
-    except:
-        res = CODES.SQL_ERROR
-        print()
-    return make_response(str(res))
+                resBody = {}
+                resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
