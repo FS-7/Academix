@@ -212,7 +212,7 @@ def SkillReadAll():
         sql = "SELECT S.ID, S.NAME AS NAME, SS.ID AS SID, SS.NAME AS SKILLSET FROM SKILLS AS S, SKILLSET AS SS WHERE S.SKILLSET=SS.ID;"
         cursor = execute(sql)
         for c in cursor.fetchall():
-            skills.append({"ID": c[0], "NAME": c[1], "SKILLSET": c[2], "SID": c[3],"SID": c[4]})
+            skills.append({"ID": c[0], "NAME": c[1], "SKILLSET": c[2], "SID": c[3]})
         db.commit()
         db.close()
         resBody = skills

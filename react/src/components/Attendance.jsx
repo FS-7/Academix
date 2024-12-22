@@ -3,8 +3,8 @@ import { Body } from "../shared/Body.jsx";
 import Webcam from "react-webcam";
 
 const menuItems = [
-    {path: '/attendance/Add', text: "Attendance", comp: <AddAttendance/>},
-    {path: '/attendance/Train', text: "Train", comp: <TrainFR/> }
+    {path: '/attendance/Add', text: "Attendance"},
+    {path: '/attendance/Train', text: "Train"}
 ]
 
 export function Attendance(){

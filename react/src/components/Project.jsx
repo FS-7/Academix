@@ -1,12 +1,14 @@
 import axios from "axios";
-import { inner_form, input_text, outer_div, submit } from "../App";
+import { inner_form, input_text, outer_div, submit } from "../main.jsx";
 import { Body } from "../shared/Body.jsx";
 import { validateEmail } from "../shared/validate";
 import { useState } from "react";
+import { Form } from "../shared/Templates.jsx";
 
 const menuItems = [
-    {path: 'Register', text: 'Register', comp: <Register />},
-    {path: 'Status', text: 'Status', comp: <Status />},
+    {path: 'Register', text: 'Register'},
+    {path: 'CreatePhase', text: 'Create Phase'},
+    {path: 'Status', text: 'Status'},
 ]
 
 function getApproverAndCoordinator(){
@@ -57,7 +59,7 @@ export function Status(){
     }
     return(
         <>
-        <table className="table-auto">
+        <table className="w-full table-auto">
             <thead>
                 <tr>
                     <th>NAME</th>
@@ -65,8 +67,8 @@ export function Status(){
                     <th>STUDENT 2</th>
                     <th>STUDENT 3</th>
                     <th>STUDENT 4</th>
+                    <th>PROJECT STATUS</th>
                     <th>APPROVER</th>
-                    <th>STATUS</th>
                     <th>COORDINATOR</th>
                     <th>STATUS</th>
                 </tr>
@@ -80,7 +82,10 @@ export function Status(){
 }
 
 export function Register(){
-    function RegisterProject(formData){
+    function RegisterProject(e){
+        e.preventDefault()
+
+        const formData = new FormData(e.target)
         const name = formData.get("project")
         const teamlead = formData.get("teamlead")
         const member1 = formData.get("member1")
@@ -124,81 +129,76 @@ export function Register(){
         .catch(e => console.log(e))
 
     }
+
+    const form = {
+        
+        submitFunction: RegisterProject,
+        method: "POST",
+        heading: "REGISTER PROJECT",
+        elements: [
+            {id: "project", name: "project", type: "text", placeholder: "Project Name", display: "PROJECT NAME", value: "", optionsList: [], isRequired: true, isDisabled: false},
+            {id: "teamlead", name: "teamlead", type: "text", placeholder: "Team Lead (USN)", display: "TEAM LEAD", value: "", optionsList: [], isRequired: true, isDisabled: false},
+            {id: "member1", name: "member1", type: "text", placeholder: "Member 1 (USN)", display: "MEMBER 1", value: "", optionsList: [], isRequired: true, isDisabled: false},
+            {id: "member2", name: "member2", type: "text", placeholder: "Member 2 (USN)", display: "MEMBER 2", value: "", optionsList: [], isRequired: true, isDisabled: false},
+            {id: "member3", name: "member3", type: "text", placeholder: "Member 3 (USN)", display: "MEMBER 3", value: "", optionsList: [], isRequired: true, isDisabled: false},
+            {id: "approver", name: "approver", type: "text", placeholder: "Approver (EMAIL)", display: "APPROVER", value: "", optionsList: [], isRequired: true, isDisabled: false},
+            {id: "coordinator", name: "coordinator", type: "text", placeholder: "Coordinator (EMAIL)", display: "COORDINATOR", value: "", optionsList: [], isRequired: true, isDisabled: false},
+        ],
+        submitButton: {id: null, name: null, value: "", text: "REGISTER"}
+    }
+
     return(
         <>
+        
         <div className={'w-full h-full flex flex-col items-center'}>
-            <div className={outer_div}>
-                <h1>REGISTER PROJECT:</h1>
-                <form onSubmit={RegisterProject} className={inner_form}>
-                    <label htmlFor="project">PROJECT NAME:</label>
-                    <input type="text" id="project" name="project" placeholder="Project Name" className={input_text} required />
-
-                    <label htmlFor="teamlead">TEAM LEAD:</label>
-                    <input type="text" id="teamlead" name="teamlead" placeholder="Team Lead (USN)" className={input_text} required />
-                    <label htmlFor="member1">MEMBER 1:</label>
-                    <input type="text" id="member1" name="member1" placeholder="Member 1 (USN)" className={input_text} />
-                    <label htmlFor="member2">MEMBER 2:</label>
-                    <input type="text" id="member2" name="member2" placeholder="Member 2 (USN)" className={input_text} />
-                    <label htmlFor="member3">MEMBER 3:</label>
-                    <input type="text" id="member3" name="member3" placeholder="Member 3 (USN)" className={input_text} />
-
-                    <label htmlFor="approver">APPROVER:</label>
-                    <input type="text" id="approver" name="approver" placeholder="Approver Email" className={input_text} required />
-                    <label htmlFor="coordinator">COORDINATOR:</label>
-                    <input type="text" id="coordinator" name="coordinator" placeholder="Coordinator Email" className={input_text} required />
-                    
-                    <button type="submit" className={submit}>Register</button>
-                </form>
-            </div>
+            <Form form={form} />
         </div>
         </>
     )
 }
 
-export function RemoveProject(){
+export function Remove(props){
+    function RemoveProject(){
+
+    }
+    
+    const form = {
+        submitFunction: RemoveProject,
+        method: "POST",
+        elements: [],
+        submitButton: {id: null, name: props.name, value: props.value, text: "REMOVE"}
+
+    }
+
     return(
         <>
-        <div className={'w-full h-full flex flex-col items-center'}>
-            <div className={outer_div}>
-                <h1>REGISTER PROJECT:</h1>
-                <form onSubmit={RegisterProject} className={inner_form}>
-                    <label htmlFor="project">PROJECT NAME:</label>
-                    <input type="text" id="project" name="project" placeholder="Project Name" className={input_text} required />
-                    
-                    <button type="submit" className={submit}>Register</button>
-                </form>
-            </div>
-        </div>
+            <Form form={form} />
         </>
     )
 }
 
 export function CreatePhase(){
+    function CreateP(){
+
+    }
+
+    const ProjectList = []
+    const AnC = getApproverAndCoordinator()
+
+    const form = {
+        submitFunction: CreateP,
+        method: "POST",
+        heading: "CREATE PHASE",
+        elements: [
+            {id: "project", name: "project", type: "select", placeholder: "Project", display: "PROJECT", value: "", optionsList: ProjectList, isRequired: true, isDisabled: false},
+            {id: "approver", name: "approver", type: "text", placeholder: "Approver", display: "APPROVER", value: AnC[0], optionsList: [], isRequired: true, isDisabled: true},
+            {id: "coordinator", name: "coordinator", type: "text", placeholder: "Coordinator", display: "COORDINATOR", value: AnC[1], optionsList: [], isRequired: true, isDisabled: true}
+        ],
+        submitButton: {id: null, name: null, value: "", text: "CREATE"}
+    }
     return(
         <div className={'w-full h-full flex flex-col items-center'}>
-            <div className={outer_div}>
-                <h1>CREATE PHASE:</h1>
-                <form onSubmit={RegisterProject} className={inner_form}>
-                    <label htmlFor="project">PROJECT NAME:</label>
-                    <input type="text" id="project" name="project" placeholder="Project Name" className={input_text} required />
-
-                    <label htmlFor="teamlead">TEAM LEAD:</label>
-                    <input type="text" id="teamlead" name="teamlead" placeholder="Team Lead (USN)" className={input_text} required />
-                    <label htmlFor="member1">MEMBER 1:</label>
-                    <input type="text" id="member1" name="member1" placeholder="Member 1 (USN)" className={input_text} />
-                    <label htmlFor="member2">MEMBER 2:</label>
-                    <input type="text" id="member2" name="member2" placeholder="Member 2 (USN)" className={input_text} />
-                    <label htmlFor="member3">MEMBER 3:</label>
-                    <input type="text" id="member3" name="member3" placeholder="Member 3 (USN)" className={input_text} />
-
-                    <label htmlFor="approver">APPROVER:</label>
-                    <input type="text" id="approver" name="approver" placeholder="Approver Email" className={input_text} required />
-                    <label htmlFor="coordinator">COORDINATOR:</label>
-                    <input type="text" id="coordinator" name="coordinator" placeholder="Coordinator Email" className={input_text} required />
-                    
-                    <button type="submit" className={submit}>Register</button>
-                </form>
-            </div>
+            <Form form={form}/>
         </div>
     )
 }
@@ -221,12 +221,15 @@ export function DeletePhase(){
 
 export function SubmitPhase(){
     return(
-        
+        <></>
     )
 }
 
 export function UpdatePhase(){
-    function UP(formData){
+    function UP(e){
+        e.preventDefault()
+
+        const formData = FormData(e.target)
         const id = formData.get("id")
         const synopsis = formData.get("synopsis")
         const presentation = formData.get("presentation")

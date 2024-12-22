@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Body } from "../shared/Body.jsx";
-import { outer_div, inner_form, input_text, submit } from "../App.jsx";
+import { outer_div, inner_form, input_text, submit } from "../main.jsx";
 
 const menuItems = [
-    {path: '/permissions/Add', text: "Add Permissions", comp: <AddPermission />}
+    {path: '/permissions/Add', text: "Add Permissions"}
 ]
 
 export function Permission(){

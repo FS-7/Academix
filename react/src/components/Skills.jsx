@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Body } from "../shared/Body.jsx";
-import { inner_form, input_text, outer_div, submit } from "../App";
+import { inner_form, input_text, outer_div, submit } from "../main.jsx";
 import { useEffect, useState } from "react";
 import { ReadSkill } from "./Skillset.jsx";
 

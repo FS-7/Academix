@@ -1,11 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Body } from "../shared/Body.jsx";
-import { outer_div, inner_form, input_text, submit } from "../App.jsx";
+import { outer_div, inner_form, input_text, submit } from "../main.jsx";
+import { Table } from "../shared/Templates.jsx";
 
 const menuItems = [
-    {path: "/department/Create", text: "Create", comp: <CreateDepartment />},
-    {path: "/department/Update", text: "Update", comp: <UpdateDepartment />}
+    {path: "/department/Create", text: "Create"},
+    {path: "/department/Update", text: "Update"}
 ]
 
 export function Department(){
@@ -79,31 +80,19 @@ export function ReadDepartment(){
         }, [])
     }
     ReadDept()
+    
+    let row = {}
+    if(departments[0] != undefined)
+        row = departments[0]
 
+    const table = {
+        tablehead: ["NAME", "REMOVE"],
+        tablebody: {keys: Object.keys(row), data: departments, deleteFunction: <RemoveDepartment />}
+    }
     return(
         <>
         <div className="w-4/6 justify-items-center">
-        <table className="w-full justify-items-center text-center">
-            <thead>
-                <tr>
-                    <th>NAME: </th>
-                    <th>REMOVE: </th>
-                </tr>
-            </thead>
-            <tbody>
-                {
-                    departments?.map(
-                        (items) => 
-                        <tr key={items["CODE"]}>
-                            <td>{items["NAME"]}</td>
-                            <td>
-                            <RemoveDepartment />
-                            </td>
-                        </tr>
-                    )
-                }
-            </tbody>
-        </table>
+            <Table table={table} />
         </div>
         </>
     )

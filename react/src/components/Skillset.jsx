@@ -1,13 +1,14 @@
 import axios from "axios";
 import { Body } from "../shared/Body.jsx";
 import { useEffect, useState } from "react";
-import { inner_form, input_text, outer_div, submit } from "../App";
+import { inner_form, input_text, outer_div, submit } from "../main.jsx";
+import { Table } from "../shared/Templates.jsx";
 
 const menuItems = [
-    {path: '/skillset/Add', text: 'Add Skill Set', comp: <AddSkillSet/>},
-    {path: '/skillset/Update', text: 'Update Skill Set', comp: <UpdateSkillSet/>},
-    {path: '/skillset/skills/Add', text: 'Add Skill', comp: <AddSkill/>},
-    {path: '/skillset/skills/Update', text: 'Update Skill', comp: <UpdateSkill/>},
+    {path: '/skillset/Add', text: 'Add Skill Set'},
+    {path: '/skillset/Update', text: 'Update Skill Set'},
+    {path: '/skillset/skills/Add', text: 'Add Skill'},
+    {path: '/skillset/skills/Update', text: 'Update Skill'},
 ]
 
 export function SkillSet(){
@@ -68,6 +69,16 @@ export function AddSkillSet(){
         .catch(e => console.log(e))
     }
     const skillSet = ReadSkillSet()
+
+    let row = {}
+    if(skillSet[0] != undefined)
+        row = skillSet[0]
+                
+    const table = {
+        tablehead: ["SKILLSET", "REMOVE"],
+        tablebody: {keys: Object.keys(row), data: skillSet, deleteFunction: <DeleteSkillSet />}
+    }
+
     return(
         <>
             <div className={'w-full h-full flex flex-col items-center'}>
@@ -81,25 +92,7 @@ export function AddSkillSet(){
                     </form>
                 </div>
                 <div className={outer_div}>
-                <table className="w-full justify-items-center text-center">
-                    <thead>
-                        <tr>
-                            <th>NAME: </th>
-                            <th>REMOVE: </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                        skillSet?.map(
-                            (items) => 
-                            <tr key={items["ID"]}>
-                                <td>{items["NAME"]}</td>
-                                <td>{<DeleteSkillSet id={items["ID"]}/>}</td>
-                            </tr>
-                            )
-                        }
-                    </tbody>
-                </table>
+                    <Table table={table} />
                 </div>
             </div>
         </>
@@ -185,7 +178,7 @@ export function DeleteSkillSet(props){
     return(
         <>
         <form onSubmit={DSS} className="py-2 justify-items-center">
-            <button type="submit" name="id" value={props.id}>DELETE</button>
+            <button type="submit" name="id" value={props.id} className={submit}>DELETE</button>
         </form>
         </>
     )
@@ -223,12 +216,15 @@ export function AddSkill(){
 
         const formData = new FormData(e.target)
         const name = formData.get("name")
+        const link = formData.get("link")
         const skillset = formData.get("skillset")
+
         axios({
             method: "post",
             url: "skillset/skill/Add",
             data: {
                 name: name,
+                link: link,
                 skillset: skillset
             }
         }
@@ -247,6 +243,15 @@ export function AddSkill(){
     const skillset = ReadSkillSet()
     const skills = ReadSkill()
 
+    let row = {}
+    if(skills[0] != undefined)
+        row = skills[0]
+                
+    const table = {
+        tablehead: ["SKILL", "REMOVE"],
+        tablebody: {keys: Object.keys(row), data: skills, deleteFunction: <DeleteSkill />}
+    }
+
     return(
         <>
         <div className={'w-full h-full flex flex-col items-center'}>
@@ -255,7 +260,8 @@ export function AddSkill(){
                 <form onSubmit={AS} className={inner_form}>
                     <label htmlFor="name">NAME: </label>
                     <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
-
+                    <label htmlFor="link">LINK: </label>
+                    <input type="text" id="link" name="link" placeholder="Link" required className={input_text}></input>
                     <label htmlFor="skillset">SKILLSET: </label>
                     <select name="skillset" id="skillset" required className={input_text}>
                         {
@@ -268,28 +274,7 @@ export function AddSkill(){
                 </form>
             </div>
             <div className={outer_div}>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>NAME</th>
-                            <th>SKILL SET</th>
-                            <th>REMOVE SKILL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            skills?.map(
-                                items => 
-                                    <tr key={items["ID"]}>
-                                        <td>{items["NAME"]}</td>
-                                        <td>{items["SID"]}</td>
-                                        <td>{<DeleteSkill id={items["ID"]}/>}</td>
-                                    </tr>
-                            )
-                        }
-                    </tbody>
-                </table>
-                
+                <Table table={table} />
             </div>
         </div>
         </>
@@ -375,7 +360,7 @@ export function DeleteSkill(props){
     return(
         <>
         <form onSubmit={DS} className="py-2 justify-items-center">
-            <button type="submit" name="id" value={props.id}>DELETE</button>
+            <button type="submit" name="id" value={props.id} className={submit}>DELETE</button>
         </form>
         </>
     )

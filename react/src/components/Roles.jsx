@@ -1,11 +1,11 @@
 import axios from "axios";
 import { Body } from "../shared/Body.jsx";
 import { useEffect, useState } from "react";
-import { inner_form, input_text, outer_div, submit } from "../App";
+import { inner_form, input_text, outer_div, submit } from "../main.jsx";
 
 const menuItems = [
-    {path: "/roles/Add", text: "Add Roles", comp: <AddRoles />},
-    {path: "/roles/Update", text: "Update Roles", comp: <UpdateRoles />},
+    {path: "/roles/Add", text: "Add Roles"},
+    {path: "/roles/Update", text: "Update Roles"},
 ]
 
 export function Roles(){
