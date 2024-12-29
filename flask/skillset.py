@@ -209,10 +209,10 @@ def SkillReadAll():
     
     skills = []
     try:
-        sql = "SELECT S.ID, S.NAME AS NAME, SS.ID AS SID, SS.NAME AS SKILLSET FROM SKILLS AS S, SKILLSET AS SS WHERE S.SKILLSET=SS.ID;"
+        sql = "SELECT S.ID, S.NAME AS NAME, S.LINK, SS.ID AS SID, SS.NAME AS SKILLSET FROM SKILLS AS S, SKILLSET AS SS WHERE S.SKILLSET=SS.ID;"
         cursor = execute(sql)
         for c in cursor.fetchall():
-            skills.append({"ID": c[0], "NAME": c[1], "SKILLSET": c[2], "SID": c[3]})
+            skills.append({"ID": c[0], "NAME": c[1], "LINK": c[2], "SID": c[3], "SKILLSET": c[4]})
         db.commit()
         db.close()
         resBody = skills
@@ -246,11 +246,11 @@ def SkillUpdate():
     ID = data["id"]
     NEWLINK = data["newlink"]
     NEWNAME = data["newname"]
-    NEWSKILLSET = data["newskillset"]
+    NEWSKILLSETID = data["newskillsetid"]
 
     try:
-        sql = "UPDATE SKILLS SET NAME=%(NEWNAME)s, SKILLSET=%(NEWSKILLSET)s WHERE ID=%(ID)s);"
-        val = {"ID": ID, "NEWLINK": NEWLINK, "NEWNAME": NEWNAME, "NEWSKILLSET": NEWSKILLSET}
+        sql = "UPDATE SKILLS SET NAME=%(NEWNAME)s, LINK=%(NEWLINK)s, SKILLSET=%(NEWSKILLSET)s WHERE ID=%(ID)s;"
+        val = {"ID": ID, "NEWLINK": NEWLINK, "NEWNAME": NEWNAME, "NEWSKILLSET": NEWSKILLSETID}
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()

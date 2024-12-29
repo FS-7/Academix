@@ -1,6 +1,7 @@
 from flask import Blueprint, make_response, request
 from http import HTTPStatus
 from mysql import connector
+import json
 from utils import db, GetToken, GetUser, execute
 
 permissions = Blueprint("permissions", __name__)
@@ -21,8 +22,10 @@ def Create():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    NAME = request.form["name"]
-    DESC = request.form["desc"]
+    data = json.loads(request.data)
+
+    NAME = data["name"]
+    DESC = data["desc"]
     
     try:
         sql = "INSERT INTO PERMISSIONS(NAME, DESCRIPTION) VALUES(%(NAME)s, %(DESC)s);"
@@ -31,7 +34,7 @@ def Create():
         if(cursor.rowcount == 1):
             db.commit()
             resBody = {}
-            resStatus = HTTPStatus.OK
+            resStatus = HTTPStatus.CREATED
 
     except connector.ProgrammingError as e:
         resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
@@ -57,7 +60,9 @@ def Read():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ID = request.GET["id"]
+    data = json.loads(request.data)
+
+    ID = data["id"]
 
     try:
         sql = "SELECT * FROM PERMISSIONS WHERE ID=%(ID)s;"
@@ -127,9 +132,11 @@ def Update():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ID = request.form["id"]
-    NEWNAME = request.form["name"]
-    NEWDESC = request.form["newdesc"]
+    data = json.loads(request.data)
+
+    ID = data["id"]
+    NEWNAME = data["newname"]
+    NEWDESC = data["newdesc"]
     
     try:
         sql = "UPDATE PERMISSIONS SET NAME=%(NEWNAME)s, DESCRIPTION=%(NEWDESC)s WHERE ID=%(ID)s;"
@@ -164,7 +171,9 @@ def Delete():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ID = request.form["id"]
+    data = json.loads(request.data)
+
+    ID = data["id"]
     
     try:
         sql = "DELETE FROM PERMISSIONS WHERE ID=%(ID)s;"
@@ -198,14 +207,16 @@ def CreateRP():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ROLE = request.form["name"]
-    DEPT = request.form["desc"]
-    PERMISSION = request.form["permission"]
-    LEVEL = request.form["level"]
+    data = json.loads(request.data)
+
+    ROLE = data["role"]
+    DEPARTMENT = data["department"]
+    PERMISSION = data["permission"]
+    LEVEL = data["level"]
 
     try:
         sql = "INSERT INTO ROLES_PERMISSIONS(ROLE, DEPARTMENT, PERMISSION, LEVEL) VALUES(%(ROLE)s, %(DEPARTMENT)s, %(PERMISSION)s, %(LEVEL)s);"
-        val = { "ROLE": ROLE, "DEPARTMENT": DEPT, "PERMISSION": PERMISSION, "LEVEL": LEVEL}
+        val = { "ROLE": ROLE, "DEPARTMENT": DEPARTMENT, "PERMISSION": PERMISSION, "LEVEL": LEVEL}
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
@@ -236,7 +247,9 @@ def ReadRP():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ID = request.GET["id"]
+    data = json.loads(request.data)
+
+    ID = data["id"]
 
     try:
         sql = "SELECT * FROM ROLES_PERMISSIONS WHERE ID=%(ID)s;"
@@ -306,11 +319,13 @@ def UpdateRP():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ID = request.form["id"]
-    ROLES = request.form["roles"]
-    DEPARTMENT = request.form["department"]
-    PERMISSION = request.form["permission"]
-    LEVEL = request.form["level"]
+    data = json.loads(request.data)
+
+    ID = data["id"]
+    ROLES = data["roles"]
+    DEPARTMENT = data["department"]
+    PERMISSION = data["permission"]
+    LEVEL = data["level"]
 
     try:
         sql = "UPDATE ROLES_PERMISSIONS SET ROLES=%(ROLES)s, DEPARTMENT=%(DEPARTMENT)s, PERMISSION=%(PERMISSION)s, LEVEL=%(LEVEL)s WHERE ID=%(ID)s;"
@@ -345,7 +360,9 @@ def DeleteRP():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ID = request.form["id"]
+    data = json.loads(request.data)
+    
+    ID = data["id"]
 
     try:
         sql = "DELETE FROM ROLES_PERMISSIONS WHERE ID=%(ID)s;"

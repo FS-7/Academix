@@ -40,7 +40,7 @@ export function TableBody(props){
                 <tr key={item[keys[0]]}>
                     <td>{item[keys[1]]}</td>
                     <td>
-                        {React.cloneElement(props.tablebody.deleteFunction, item[keys[0]])}
+                        {React.cloneElement(props.tablebody.deleteFunction, { code: item[keys[0]] })}
                     </td>
                 </tr>
             )
@@ -54,7 +54,7 @@ export function Form(props){
     return(
         <>
         <div className={outer_div}>
-            <h1>{props.form.heading}</h1>
+            {props.form.heading? <h1>{props.form.heading}</h1> : null }
             <form onSubmit={props.form.submitFunction} method={props.form.method} className={inner_form}>
                 {
                     props.form.elements.map(
@@ -69,20 +69,26 @@ export function Form(props){
 }
 
 export function InputText(props){
-    if(props.input.type == "text" || "number" || "email" || "password")
+    if(props.input.isHidden == true)
         return(
             <>
-            <label htmlFor={props.input.id}>{props.input.display}</label>
-            <input type={props.input.type} id={props.input.id} name={props.input.name} placeholder={props.input.placeholder} defaultValue={props.input.value} className={input_text} />
+            <input type={props.input.type} id={props.input.id} name={props.input.name} placeholder={props.input.placeholder} value={props.input.value} required={ props.input.isRequired == true} disabled={ props.input.isDisabled } hidden={ props.input.isHidden } readOnly={ props.input.readOnly } className={input_text} />
             </>
         )
-    else if(props.input.type == "select")
+    if(props.input.type == "select")
         return(
             <>
             <label htmlFor={props.input.id}>{props.input.display}</label>
-            <input type={props.input.type} id={props.input.id} name={props.input.name} placeholder={props.input.placeholder} className={input_text} >
+            <select type={props.input.type} id={props.input.id} name={props.input.name} placeholder={props.input.placeholder} value={props.input.defaultValue} required={ props.input.isRequired == true} disabled={ props.input.isDisabled } hidden={ props.input.isHidden } readOnly={ props.input.readOnly } className={input_text} >
                 <SelectList list={props.input.optionsList} />
-            </input>
+            </select>
+            </>
+        )
+    else if(props.input.type == "text" || "number" || "email" || "password")
+        return(
+            <>
+            <label htmlFor={props.input.id}>{props.input.display}</label>
+            <input type={props.input.type} id={props.input.id} name={props.input.name} placeholder={props.input.placeholder} value={props.input.value} required={ props.input.isRequired == true} disabled={ props.input.isDisabled } hidden={ props.input.isHidden } readOnly={ props.input.readOnly } className={input_text} />
             </>
         )
     else
@@ -90,17 +96,26 @@ export function InputText(props){
 }
 
 export function SelectList(props){
-    return(
-        props.list.map(items =>
-            item => <option key={item.id} value={item.value}>{item.value}</option>
+    if(props.list[0] != null){
+        const keys = Object.keys(props.list[0]);
+        
+        return(
+            <>
+            {
+                props.list.map(
+                    item => 
+                        <option key={item[keys[0]]} value={item[keys[0]]}>{item[keys[0]]}</option>                    
+                )
+            }
+            </>
         )
-    )
+    }
 }
 
 export function SubmitButton(props){
     return(
         <>
-        <button type="submit" name={props.submit.name} value={props.submit.value} className={submit}>{props.submit.text}</button>
+        <button type="submit" className={submit}>{props.submit.text}</button>
         </>
     )
 }

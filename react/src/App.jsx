@@ -1,17 +1,18 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import { Header } from './shared/Layout.jsx';
 import { Index } from "./Index.jsx";
 import { About, Devs } from "./About.jsx";
 import { AddAttendance, Attendance, TrainFR } from "./components/Attendance.jsx";
 import { CreateDepartment, Department, UpdateDepartment } from "./components/Departments.jsx";
-import { AddPermission, Permission } from "./components/Permissions.jsx";
+import { AddPermission, BindPermission } from "./components/Permissions.jsx";
 import { Register as RegisterProject, Status, Project, CreatePhase } from "./components/Project.jsx";
 import { AddRoles, Roles,  UpdateRoles } from "./components/Roles.jsx";
 import { AddSkill, AddSkillSet, SkillSet, UpdateSkill, UpdateSkillSet } from "./components/Skillset.jsx";
 import { AddUserSkill } from "./components/Skills.jsx";
-import { Login, Logout, Profile, Register, UpdatePassword, UpdateProfile, User, GetMyRequests, GetRequests, SetUserRole } from "./components/User.jsx";
-import PageNotFound from "./shared/NotFound.jsx";
+import { Login, Profile, Register, UpdatePassword, UpdateProfile, User, GetMyRequests, GetRequests, SetUserRole } from "./components/User.jsx";
 import { Admin } from "./Admin.jsx";
+import PageNotFound from "./shared/NotFound.jsx";
 
 function App() {
     return (
@@ -63,12 +64,14 @@ function App() {
                             <Route path="Create" element={<CreateDepartment />} /> 
                             <Route path="Update" element={<UpdateDepartment />} /> 
                         </Route>
-                        <Route path="Permissions" element={<Permission />} >
-                            <Route path="Add" element={<AddPermission />} />
-                        </Route>
+                        
                         <Route path="Roles" element={<Roles />} >
                             <Route path="Add" element={<AddRoles />}/>
                             <Route path="Update" element={<UpdateRoles />}/>
+                            <Route path="Permissions" >
+                                <Route path="Add" element={<AddPermission />} />
+                                <Route path="Bind" element={<BindPermission />} />
+                            </Route>
                         </Route>
                         <Route path="Skillset" element={<SkillSet />} >
                             <Route path="Add" element={<AddSkillSet />} />

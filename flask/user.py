@@ -286,3 +286,54 @@ def UpdatePassword():
         print(e)
 
     return make_response(resBody, resStatus)
+
+@user.route("/RegisterAsStudent", methods=["POST"])
+def RegisterAsStudent():
+    resBody = {}
+    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    TOKEN = GetToken()
+    User = GetUser(TOKEN)
+    if(User == -1):
+        resBody = {}
+        resStatus = HTTPStatus.UNAUTHORIZED
+        return make_response(resBody, resStatus)
+    
+    data = json.loads(request.data)
+
+    USN = data["usn"]
+    STUDENT = data["student"]
+    DEPARTMENT = data["department"]
+    BATCH = data["batch"]
+    User = GetUser(TOKEN)
+
+    try:
+        sql = "INSERT INTO STUDENT(USN, STUDENT, DEPARTMENT, BATCH, APPROVER) VALUES(%(USN)s, %(STUDENT)s, %(DEPARTMENT)s, %(BATCH)s, %(APPROVER)s);"
+        val = { "USN": USN, "STUDENT": STUDENT, "DEPARTMENT": DEPARTMENT, "BATCH": BATCH, "APPROVER": User }
+        cursor = execute(sql, val)
+        for x in cursor:
+            id = x[0]
+            pass_hash = x[1]
+
+        if(pass_hash == oldPassHash):
+            sql = "UPDATE USERS SET PASS_HASH=%(NEW_PASS)s WHERE ID=%(ID)s;"
+            val = { "NEW_PASS": newPassHash, "ID": id}
+            cursor = execute(sql, val)
+            if(cursor.rowcount == 1):
+                db.commit()
+                db.close()
+                resBody = {}
+                resStatus = HTTPStatus.OK
+    
+    except connector.ProgrammingError as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except connector.Error as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+    except Exception as e:
+        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
+        print(e)
+
+    return make_response(resBody, resStatus)
+

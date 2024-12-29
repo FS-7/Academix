@@ -135,6 +135,7 @@ def Delete():
     data = json.loads(request.data)
 
     CODE = data["code"]
+    print(CODE)
     try:
         sql = "DELETE FROM DEPARTMENTS WHERE CODE=%(CODE)s;"
         val = { "CODE": CODE }

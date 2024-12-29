@@ -1,12 +1,11 @@
 import axios from "axios";
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
+import { Navigate } from "react-router-dom";
+
 import { Body } from "../shared/Body.jsx";
 import { userLoggedIn, validateEmail, validatePassword, validatePhone } from "../shared/validate.jsx";
-import { Navigate } from "react-router-dom";
 import { outer_div, inner_form, input_text, submit } from "../main.jsx";
 import { Read_Roles } from "./Roles.jsx";
-import { AddUserSkill } from "./Skills.jsx";
-import { Form } from "../shared/Templates.jsx";
 
 const menuItems = [
     { path: "/User/", text: "Profile"},
@@ -75,24 +74,30 @@ export function Register(){
         .catch(e => console.log(e))
     }
 
-    const Register = {
-        submitFunction: RegisterUser,
-        method: "POST",
-        heading: "REGISTER",
-        elements: [
-            {id: "name", name: "name", type: "text", placeholder: "Name", display: "NAME", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "email", name: "email", type: "email", placeholder: "Email", display: "EMAIL", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "number", name: "phone", type: "number", placeholder: "Phone", display: "PHONE", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "password", name: "password", type: "password", placeholder: "Enter Password", display: "ENTER PASSWORD", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "password2", name: "password2", type: "password", placeholder: "Enter Password Again", display: "ENTER PASSWORD AGAIN", value: "", optionsList: [], isRequired: true, isDisabled: false},
-        ],
-        submitButton: { id: null, name: null, value: "", text: "REGISTER"}
-    }
-
     return(
         <>
         <div className="h-full w-5/6 md:w-full flex grow items-center justify-center overflow-scroll">
-            <Form form={Register}/>
+            <div className={outer_div}>
+                <h1>REGISTER:</h1>
+                <form onSubmit={RegisterUser} method="post" className={inner_form}>
+                    <label htmlFor="name">NAME: </label>
+                    <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
+
+                    <label htmlFor="email">EMAIL: </label>
+                    <input type="email" id="email" name="email" placeholder="Email" required className={input_text}></input>
+
+                    <label htmlFor="phone">PHONE: </label>
+                    <input type="number" id="phone" name="phone" placeholder="Phone" required className={input_text}></input>
+                    
+                    <label htmlFor="password">ENTER PASSWORD: </label>
+                    <input type="password" id="password" name="password" placeholder="Enter Password" required className={input_text}></input>
+
+                    <label htmlFor="password2">ENTER PASSWORD AGAIN: </label>
+                    <input type="password" id="password2" name="password2" placeholder="Enter Password Again" required className={input_text}></input>
+
+                    <button type="submit" className={submit}>SIGN UP</button>
+                </form>
+            </div>
         </div>
         </>
     );
@@ -133,21 +138,22 @@ export function Login(){
         .catch(e => console.log(e))
     }
 
-    const Login = {
-        submitFunction: LoginUser,
-        method: "POST",
-        heading: "LOGIN",
-        elements: [
-            {id: "email", name: "email", type: "email", placeholder: "Email", display: "EMAIL", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "password", name: "password", type: "password", placeholder: "Enter Password", display: "ENTER PASSWORD", value: "", optionsList: [], isRequired: true, isDisabled: false}
-        ],
-        submitButton: { id: null, name: null, value: "", text: "LOGIN"}
-    }
-
     return(
         <>
         <div className="h-full w-5/6 md:w-full flex grow items-center justify-center overflow-scroll">
-            <Form form={Login}/>
+            <div className={outer_div}>
+                <img src="logo.png" alt="anim" className="w-40 h-40 block border border-black rounded-full overflow-hidden"></img>
+                <h1>LOGIN: </h1>
+                <form onSubmit={LoginUser} method="POST" className={inner_form}>
+                    <label htmlFor="email">EMAIL: </label>
+                    <input type="email" id="email" name="email" placeholder="Email" required className={input_text}></input>
+
+                    <label htmlFor="password">PASSWORD: </label>
+                    <input type="password" id="password" name="password" placeholder="Password" required className={input_text}></input>
+                    
+                    <button type="submit" className={submit}>SIGN IN</button>
+                </form>
+            </div>
         </div>
         </>
     )
@@ -176,15 +182,12 @@ export function Logout(){
         })
         .catch(e => console.log(e))
     }
-    const form = {
-        submitFunction: LogoutUser,
-        method: "POST",
-        elements: [],
-        submitButton: {id: null, name: null, value: "", text: "LOGOUT"}
-    }
+
     return (
         <>
-            <Form form={form}/>
+        <form onSubmit={LogoutUser} method="post" >
+            <button type="submit">LOGOUT</button>
+        </form>
         </>   
     )
 }
@@ -282,22 +285,26 @@ export function UpdateProfile(){
         })
         .catch(e => console.log(e))
     }
-    
-    const UpdateProfile = {
-        submitFunction: UpdateUserProfile,
-        method: "POST",
-        heading: "UPDATE PROFILE",
-        elements: [
-            {id: "name", name: "name", type: "name", placeholder: "Name", display: "NAME: ", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "email", name: "email", type: "email", placeholder: "Email", display: "EMAIL: ", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "phone", name: "phone", type: "phone", placeholder: "Phone", display: "PHONE: ", value: "", optionsList: [], isRequired: true, isDisabled: false},
-        ],
-        submitButton: { id: null, name: null, value: "", text: "UPDATE"}
-    }
 
     return (
         <>
-            <Form form={UpdateProfile} />
+        <div className={outer_div}>
+            <h1>UPDATE PROFILE: </h1>
+            <form onSubmit={UpdateUserProfile} className={inner_form}>
+                <label htmlFor="name" className="flex flex-row items-center">NAME: </label>
+                <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
+
+                <label htmlFor="email" className="flex flex-row items-center">EMAIL: </label>
+                <input type="email" id="email" name="email" placeholder="Email" required className={input_text}></input>
+                
+                <label htmlFor="phone" className="flex flex-row items-center">PHONE: </label>
+                <input type="number" id="phone" name="phone" placeholder="Phone" required className={input_text}></input>
+
+                <button type="submit" className={submit}>UPDATE PROFILE</button>
+            </form>
+            <br />
+                <NavLink to='/user/UpdatePassword'><button className={submit}>UPDATE PASSWORD</button></NavLink>
+        </div>
         </>
     );
 }
@@ -337,21 +344,80 @@ export function UpdatePassword(){
         })
         .catch(e => console.log(e))
     }
-    
-    const UpdatePassword = {
-        submitFunction: UpdateUserPassword,
-        method: "POST",
-        heading: "UPDATE PASSWORD",
-        elements: [
-            {id: "password", name: "password", type: "password", placeholder: "Enter Password", display: "ENTER PASSWORD", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "password2", name: "password2", type: "password", placeholder: "Enter Password Again", display: "ENTER PASSWORD AGAIN", value: "", optionsList: [], isRequired: true, isDisabled: false},
-        ],
-        submitButton: { id: null, name: null, value: "", text: "UPDATE PASSWORD"}
-    }
 
     return (
         <>
-            <Form form={UpdatePassword} />
+        <div className={outer_div}>
+            <h1>UPDATE PASSWORD: </h1>
+            <form onSubmit={UpdateUserPassword} className={inner_form}>
+                <label htmlFor="password" className="flex flex-row grow items-center">ENTER PASSWORD: </label>
+                <input type="password" id="password" name="password" placeholder="Enter Password" required className={input_text}></input>
+                
+
+                <label htmlFor="password2" className="flex flex-row items-center">ENTER PASSWORD AGAIN: </label>        
+                <input type="password" id="password2" name="password2" placeholder="Enter Password Again" required className={input_text}></input>
+                
+
+                <button type="submit" className={submit}>UPDATE PASSWORD</button>
+            </form>
+        </div>
+        </>
+    )
+}
+
+export function RegisterAsStudent(){
+    function RegisterStudent(){
+        e.preventDefault()
+        const formData = new FormData(e.target)
+
+        const usn = formData.get("usn")
+        const student = formData.get("student")
+        const department = formData.get("department")
+        const batch = formData.get("batch")
+        
+        axios({
+            method: 'post',
+            url: '/user/RegisterAsStudent',
+            data: {
+                usn: usn,
+                student: student,
+                department: department,
+                batch: batch
+            }
+        })
+        .then(res => {
+            if(res.status == 200){
+                alert("Password Updated")
+            }
+            else if(res.status == 401)
+                alert("You are not authorized!")
+            else if(res.status == 400)
+                alert("Check form elements")
+            else
+                alert("Unknown Error")
+        })
+        .catch(e => console.log(e))
+    }
+    return (
+        <>
+        <div className={outer_div}>
+            <h1>REGISTER AS STUDENT: </h1>
+            <form onSubmit={RegisterStudent} className={inner_form}>
+                <label htmlFor="usn" className="flex flex-row grow items-center">ENTER USN: </label>
+                <input type="text" id="usn" name="usn" placeholder="Enter USN" required className={input_text}></input>
+                
+                <label htmlFor="student" className="flex flex-row grow items-center">ENTER STUDENT: </label>
+                <input type="text" id="student" name="student" placeholder="Enter Student" required className={input_text}></input>
+                
+                <label htmlFor="usn" className="flex flex-row grow items-center">ENTER USN: </label>
+                <input type="text" id="usn" name="usn" placeholder="Enter USN" required className={input_text}></input>
+                
+                <label htmlFor="usn" className="flex flex-row grow items-center">ENTER USN: </label>
+                <input type="text" id="usn" name="usn" placeholder="Enter USN" required className={input_text}></input>
+
+                <button type="submit" className={submit}>REGISTER</button>
+            </form>
+        </div>
         </>
     )
 }
@@ -640,7 +706,8 @@ export function Approve(props){
     return(
         <>
         <form onSubmit={App} className="py-2 justify-items-center">
-            <button type="submit" name="id" value={props.id}><img></img></button>
+            <input type="text" name="id" value={props.id} required hidden readOnly></input>
+            <button type="submit">APPROVE</button>
         </form>
         </>
     )
@@ -671,7 +738,8 @@ export function Deny(props){
     return(
         <>
         <form onSubmit={Den} className="py-2 justify-items-center">
-            <button type="submit" name="id" value={props.id}><img></img></button>
+            <input type="text" name="id" value={props.id} required hidden readOnly></input>
+            <button type="submit">DENY</button>
         </form>
         </>
     )

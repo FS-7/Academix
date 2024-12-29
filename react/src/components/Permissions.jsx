@@ -1,20 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Body } from "../shared/Body.jsx";
 import { outer_div, inner_form, input_text, submit } from "../main.jsx";
-
-const menuItems = [
-    {path: '/permissions/Add', text: "Add Permissions"}
-]
-
-export function Permission(){
-    return(
-        <>
-        <Body menuItems={menuItems}/>
-        </>
-    )
-}
-
+import { Read_Roles } from "./Roles.jsx";
+import { ReadDept } from "./Departments.jsx";
+import { validateLevel } from "../shared/validate.jsx";
 
 export function Read_Permissions(){
     const [res, setRes] = useState([])
@@ -25,10 +14,13 @@ export function Read_Permissions(){
         })
         .then(
             res => {
-                if(Array.isArray(res.data))
-                    setRes(r => r = res.data)
+                if(res.status == 200)
+                    if(Array.isArray(res.data))
+                        setRes(_ => _ = res.data)
+                else if(res.status == 400)
+                    alert("Check form elements")
                 else
-                    setRes(r => r = [])
+                    alert("Unknown Error")
             }
         )
     }, [])
@@ -40,31 +32,40 @@ export function AddPermission(){
         e.preventDefault()
 
         const formData = new FormData(e.target)
-        const name=formData.get("name")
+        const name = formData.get("name");
+        const desc = formData.get("desc");
         axios({
-            method: 'post',
+            method: "POST",
             url: '/permissions/Create',
             data: {
-                name: name
+                name: name,
+                desc: desc
             }
         })
         .then(res => {
-            alert()
-            console.log(res)
+            if(res.status == 201)
+                alert("Permission Created")
+            else if(res.status == 400)
+                alert("Check form elements")
+            else
+                alert("Unknown Error")
         })
+        .catch(e => console.log(e))
     }
 
     return(
         <>
             <div className={'w-full h-full flex flex-col items-center'}>
                 <div className={outer_div}>
-                <h1>CREATE PERMISSION:</h1>
+                    <h1>CREATE DEPARTMENT:</h1>
                     <form onSubmit={AP} className={inner_form}>
-        
                         <label htmlFor="name">NAME: </label>
                         <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
-        
-                        <button type="submit" className={submit}>CREATE</button>
+
+                        <label htmlFor="desc">DESCRIPTION: </label>
+                        <input type="text" id="desc" name="desc" placeholder="Description" className={input_text}></input>
+                
+                        <button type="submit" className={submit}>ADD</button>
                     </form>
                 </div>
                 <div className={outer_div}>
@@ -83,6 +84,7 @@ export function ReadPermissions(){
             <thead>
                 <tr>
                     <th>PERMISSION NAME</th>
+                    <th>DESCRIPTION</th>
                     <th>DELETE PERMISSION</th>
                 </tr>
             </thead>
@@ -92,6 +94,7 @@ export function ReadPermissions(){
                         items => 
                         <tr key={items["ID"]}>
                             <td>{items["NAME"]}</td>
+                            <td>{items["DESC"]}</td>
                             <td>
                                 <DeletePermission id={items["ID"]}/>
                             </td>
@@ -104,82 +107,45 @@ export function ReadPermissions(){
     )
 }
 
-export function UpdatePermissions(){
-    const permissions = Read_Permissions()
-
-    function UpdatePermissions(e){
-        e.preventDefault()
-
-        const formData = new FormData(e.target)
-        const id = formData.get("id")
-        const name = formData.get("name")
-        axios({
-            method: 'post',
-            url: '/permissions/Update',
-            data: {
-                id: id,
-                name: name
-            }
-        })
-        .then(res => {
-            alert("Permissions Updated")
-            console.log(res)
-        })
-    }
-
-    return(
-        <>
-            <div className={outer_div}>
-                <h1>UPDATE PERMISSION:</h1>
-                <form onSubmit={UpdatePermissions} className={inner_form}>
-                    <label htmlFor="id">PERMISSION: </label>
-                    <select name="id" id="id" className={input_text} required>
-                        {
-                            permissions?.map(
-                                items => 
-                                    <option key={items["ID"]} value={items["ID"]}>{items["NAME"]}</option>
-                            )
-                        }
-                    </select>   
-                    <label htmlFor="newid">NEW ID: </label>
-                    <input type="text" id="newid" name="newid" placeholder="New Id" className={input_text}></input>
-        
-                    <label htmlFor="name">NAME: </label>
-                    <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
-        
-                    <button type="submit" className={submit}>UPDATE PERMISSION</button>
-                </form>
-            </div>
-        </>
-    )
-}
-
 export function DeletePermission(props){
     function DP(e){
         e.preventDefault()
 
         const formData = new FormData(e.target)
+        
         const id = formData.get("id")
+
         axios({
-            method: 'post',
+            method: "POST",
             url: '/permissions/Delete',
             data: {
                 id: id
             }
         })
         .then(res => {
-            alert()
-            console.log(res)
+            if(res.status == 200)
+                alert("Permissions Deleted")
+            else if(res.status == 400)
+                alert("Check form elements")
+            else
+                alert("Unknown Error")
         })
+        .catch(e => console.log(e))
     }
+
     return(
         <>
-        <form onSubmit={DP} className="py-2 justify-items-center">
-            <button type="submit" name="id" value={props.id} className={submit}>Delete</button>
+        <form onSubmit={DP} className={inner_form}>
+            <input type="text" name="id" value={props.id} required hidden readOnly></input>
+            <button type="submit" className={submit}>DELETE</button>
         </form>
         </>
     )
 }
+
+//
+//  ROLES AND PERMISSIONS
+//
 
 export function Read_RP(){
     const [res, setRes] = useState([])
@@ -190,55 +156,102 @@ export function Read_RP(){
         })
         .then(
             res => {
-                if(Array.isArray(res.data))
-                    setRes(r => r = res.data)
+                if(res.status == 200)
+                    if(Array.isArray(res.data))
+                        setRes(r => r = res.data)
+                else if(res.status == 400)
+                    alert("Check form elements")
                 else
-                    setRes(r => r = [])
+                    alert("Unknown Error")
             }
         )
     }, [])
     return res
 }
 
-export function AddRP(){
-    function ARP(e){
+export function BindPermission(){
+    function BRP(e){
         e.preventDefault()
 
         const formData = new FormData(e.target)
-        const name=formData.get("name")
+        
+        const role = formData.get("role")
+        const department = formData.get("department")
+        const permission = formData.get("permission")
+        const level = formData.get("level")
+
+        if(!validateLevel(level)){
+            alert("Wrong Input Level")
+            return
+        }
+
         axios({
-            method: 'post',
+            method: "POST",
             url: '/permissions/CreateRP',
             data: {
-                name: name
+                role: role,
+                department: department,
+                permission: permission,
+                level: level
             }
         })
         .then(res => {
-            alert()
-            console.log(res)
+            if(res.status == 200)
+                alert("Role and Permission Bounded")
+            else if(res.status == 400)
+                alert("Check form elements")
+            else
+                alert("Unknown Error")
         })
+        .catch(e => console.log(e))
     }
 
+    const roles = Read_Roles()
+    const depts = ReadDept()
+    const perms = Read_Permissions()
+    
     return(
         <>
             <div className={'w-full h-full flex flex-col items-center'}>
                 <div className={outer_div}>
-                <h1>CREATE PERMISSION:</h1>
-                    <form onSubmit={ARP} className={inner_form}>
-        
-                        <label htmlFor="role">role: </label>
-                        <input type="text" id="role" name="role" placeholder="role" required className={input_text}></input>
+                    <h1>BIND ROLES AND PERMISSION:</h1>
+                    <form onSubmit={BRP} className={inner_form}>
+                        <label htmlFor="role">ROLE: </label>
+                        <select type="text" id="role" name="role" placeholder="Role" required className={input_text}>
+                            {
+                                roles.map(item => 
+                                    <option key={item["ID"]} value={item["ID"]}>{item["NAME"]}</option>
+                                )
+                            }
+                        </select>
 
-                        <label htmlFor="dept">dept: </label>
-                        <input type="text" id="dept" name="dept" placeholder="dept" required className={input_text}></input>
+                        <label htmlFor="department">DEPARTMENT: </label>
+                        <select type="text" id="department" name="department" placeholder="Department" className={input_text}>
+                            {
+                                depts.map(item => 
+                                    <option key={item["CODE"]} value={item["CODE"]}>{item["NAME"]}</option>
+                                )
+                            }
+                        </select>
+                        
+                        <label htmlFor="permission">PERMISSION: </label>
+                        <select type="text" id="permission" name="permission" placeholder="Permission" className={input_text}>
+                            {
+                                perms.map(item => 
+                                    <option key={item["ID"]} value={item["ID"]}>{item["NAME"]}</option>
+                                )
+                            }
+                        </select>
 
-                        <label htmlFor="permission">permission: </label>
-                        <input type="text" id="permission" name="permission" placeholder="permission" required className={input_text}></input>
-
-                        <label htmlFor="level">level: </label>
-                        <input type="number" id="level" name="level" placeholder="level" required className={input_text}></input>
-        
-                        <button type="submit" className={submit}>CREATE</button>
+                        <label htmlFor="level">LEVEL: </label>
+                        <select id="level" name="level" placeholder="level" className={input_text}>
+                            <option value="0">None</option>
+                            <option value="1">Read</option>
+                            <option value="2">Write</option>
+                            <option value="3">Read Write</option>
+                        </select>
+                
+                        <button type="submit" className={submit}>ADD</button>
                     </form>
                 </div>
                 <div className={outer_div}>
@@ -250,25 +263,29 @@ export function AddRP(){
 }
 
 export function ReadRP(){
-    const permissions = Read_RP()
+    const roles_permissions = Read_RP()
     return(
         <>
         <table className="">
             <thead>
                 <tr>
-                    <th>PERMISSION NAME</th>
+                    <th>ROLE</th>
+                    <th>DEPARTMENT</th>
+                    <th>PERMISSION</th>
+                    <th>LEVEL</th>
                     <th>DELETE PERMISSION</th>
                 </tr>
             </thead>
             <tbody>
                 {
-                    permissions?.map(
+                    roles_permissions?.map(
                         items => 
                         <tr key={items["ID"]}>
-                            <td>{items["NAME"]}</td>
-                            <td>
-                                <DeletePermission id={items["ID"]}/>
-                            </td>
+                            <td>{items["ROLE"]}</td>
+                            <td>{items["DEPARTMENT"]}</td>
+                            <td>{items["PERMISSION"]}</td>
+                            <td>{items["LEVEL"]}</td>
+                            <td><DeleteRP id={items["ID"]} /></td>
                         </tr>
                     )
                 }
@@ -278,76 +295,34 @@ export function ReadRP(){
     )
 }
 
-export function UpdateRP(){
-    const permissions = Read_RP()
-
-    function UpdatePermissions(e){
-        e.preventDefault()
-
-        const formData = new FormData(e.target)
-        const id = formData.get("id")
-        const newid = formData.get("newid")
-        const name = formData.get("name")
-        axios({
-            method: 'post',
-            url: '/permissions/UpdateRP',
-            data: {
-                id: id,
-                name: name
-            }
-        })
-        .then(res => {
-            alert("Permissions Updated")
-            console.log(res)
-        })
-    }
-
-    return(
-        <>
-            <div className={outer_div}>
-                <h1>UPDATE PERMISSION:</h1>
-                <form onSubmit={UpdatePermissions} className={inner_form}>
-                    <label htmlFor="id">PERMISSION: </label>
-                    <select name="id" id="id" className={input_text} required>
-                        {
-                            permissions?.map(
-                                items => 
-                                    <option key={items["ID"]} value={items["ID"]}>{items["NAME"]}</option>
-                            )
-                        }
-                    </select>
-        
-                    <label htmlFor="name">NAME: </label>
-                    <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
-        
-                    <button type="submit" className={submit}>UPDATE PERMISSION</button>
-                </form>
-            </div>
-        </>
-    )
-}
-
 export function DeleteRP(props){
     function DP(e){
         e.preventDefault()
 
         const formData = new FormData(e.target)
+        
         const id = formData.get("id")
         axios({
-            method: 'post',
+            method: "POST",
             url: '/permissions/DeleteRP',
             data: {
                 id: id
             }
         })
         .then(res => {
-            alert()
-            console.log(res)
+            if(res.status == 200)
+                alert("Role and Permission Unbounded")
+            else if(res.status == 400)
+                alert("Check form elements")
+            else
+                alert("Unknown Error")
         })
+        .catch(e => console.log(e))
     }
     return(
         <>
         <form onSubmit={DP} className="py-2 justify-items-center">
+            <input type="text" name="id" value={props.id} required hidden readOnly></input>
             <button type="submit" name="id" value={props.id} className={submit}>Delete</button>
         </form>
         </>

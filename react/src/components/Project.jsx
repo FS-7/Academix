@@ -1,14 +1,14 @@
 import axios from "axios";
+import { useState } from "react";
+
 import { inner_form, input_text, outer_div, submit } from "../main.jsx";
 import { Body } from "../shared/Body.jsx";
 import { validateEmail } from "../shared/validate";
-import { useState } from "react";
-import { Form } from "../shared/Templates.jsx";
 
 const menuItems = [
+    {path: 'Status', text: 'Status'},
     {path: 'Register', text: 'Register'},
     {path: 'CreatePhase', text: 'Create Phase'},
-    {path: 'Status', text: 'Status'},
 ]
 
 function getApproverAndCoordinator(){
@@ -68,7 +68,6 @@ export function Status(){
                     <th>STUDENT 3</th>
                     <th>STUDENT 4</th>
                     <th>PROJECT STATUS</th>
-                    <th>APPROVER</th>
                     <th>COORDINATOR</th>
                     <th>STATUS</th>
                 </tr>
@@ -87,17 +86,12 @@ export function Register(){
 
         const formData = new FormData(e.target)
         const name = formData.get("project")
-        const teamlead = formData.get("teamlead")
         const member1 = formData.get("member1")
         const member2 = formData.get("member2")
         const member3 = formData.get("member3")
-        const guide = formData.get("guide")
+        const member4 = formData.get("member4")
         const coordinator = formData.get("coordinator")
 
-        if(!validateEmail(guide)){
-            alert("Check guide Email")
-            return 
-        }
         if(!validateEmail(coordinator)){
             alert("Check coordinator Email") 
             return
@@ -108,11 +102,10 @@ export function Register(){
             url: 'progress/Add',
             data: {
                 name: name,
-                teamlead: teamlead,
                 member1: member1,
                 member2: member2,
                 member3: member3,
-                guide: guide,
+                member4: member4,
                 coordinator: coordinator
             }
         })
@@ -130,91 +123,118 @@ export function Register(){
 
     }
 
-    const form = {
-        
-        submitFunction: RegisterProject,
-        method: "POST",
-        heading: "REGISTER PROJECT",
-        elements: [
-            {id: "project", name: "project", type: "text", placeholder: "Project Name", display: "PROJECT NAME", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "teamlead", name: "teamlead", type: "text", placeholder: "Team Lead (USN)", display: "TEAM LEAD", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "member1", name: "member1", type: "text", placeholder: "Member 1 (USN)", display: "MEMBER 1", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "member2", name: "member2", type: "text", placeholder: "Member 2 (USN)", display: "MEMBER 2", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "member3", name: "member3", type: "text", placeholder: "Member 3 (USN)", display: "MEMBER 3", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "approver", name: "approver", type: "text", placeholder: "Approver (EMAIL)", display: "APPROVER", value: "", optionsList: [], isRequired: true, isDisabled: false},
-            {id: "coordinator", name: "coordinator", type: "text", placeholder: "Coordinator (EMAIL)", display: "COORDINATOR", value: "", optionsList: [], isRequired: true, isDisabled: false},
-        ],
-        submitButton: {id: null, name: null, value: "", text: "REGISTER"}
-    }
-
     return(
         <>
         
         <div className={'w-full h-full flex flex-col items-center'}>
-            <Form form={form} />
+            <div className={outer_div}>
+                <h1>REGISTER PROJECT:</h1>
+                <form onSubmit={RegisterProject} className={inner_form}>
+                    <label htmlFor="project">PROJECT NAME: </label>
+                    <input type="text" id="project" name="project" placeholder="Project" required className={input_text}></input>
+                    
+                    <label htmlFor="member1">MEMBER 1: </label>
+                    <input type="text" id="member1" name="member1" placeholder="Member 1" required className={input_text}></input>
+                    
+                    <label htmlFor="member2">MEMBER 2: </label>
+                    <input type="text" id="member2" name="member2" placeholder="Member 2" className={input_text}></input>
+
+                    <label htmlFor="member3">MEMBER 3: </label>
+                    <input type="text" id="member3" name="member3" placeholder="Member 3" className={input_text}></input>
+
+                    <label htmlFor="member4">MEMBER 4: </label>
+                    <input type="text" id="member4" name="member4" placeholder="Member 4" className={input_text}></input>
+
+                    <label htmlFor="coordinator">COORDINATOR: </label>
+                    <input type="text" id="coordinator" name="coordinator" placeholder="Coordinator" required className={input_text}></input>
+        
+                    <button type="submit" className={submit}>REGISTER</button>
+                </form>
+            </div>
+            <div>
+
+            </div>
         </div>
         </>
     )
 }
 
-export function Remove(props){
-    function RemoveProject(){
+export function GetProjects(){
 
+    return(
+        <table>
+            <thead>
+                <tr>
+                    <th>NAME</th>
+                    <th>COORDINATOR</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+        </table>
+    )
+}
+
+export function Remove(props){
+    function RemoveProject(e){
+        e.preventDefault()
     }
     
-    const form = {
-        submitFunction: RemoveProject,
-        method: "POST",
-        elements: [],
-        submitButton: {id: null, name: props.name, value: props.value, text: "REMOVE"}
-
-    }
 
     return(
         <>
-            <Form form={form} />
+            <form onSubmit={RemoveProject} className={inner_form}>
+                <input type="text" id="id" name="id" value={props.id} required hidden readOnly ></input>
+                <button type="submit" className={submit}>DELETE</button>
+            </form>
         </>
     )
 }
 
 export function CreatePhase(){
-    function CreateP(){
+    
+    const d = new Date()
 
+    function CreateP(){
+        e.preventDefault()
     }
 
     const ProjectList = []
     const AnC = getApproverAndCoordinator()
 
-    const form = {
-        submitFunction: CreateP,
-        method: "POST",
-        heading: "CREATE PHASE",
-        elements: [
-            {id: "project", name: "project", type: "select", placeholder: "Project", display: "PROJECT", value: "", optionsList: ProjectList, isRequired: true, isDisabled: false},
-            {id: "approver", name: "approver", type: "text", placeholder: "Approver", display: "APPROVER", value: AnC[0], optionsList: [], isRequired: true, isDisabled: true},
-            {id: "coordinator", name: "coordinator", type: "text", placeholder: "Coordinator", display: "COORDINATOR", value: AnC[1], optionsList: [], isRequired: true, isDisabled: true}
-        ],
-        submitButton: {id: null, name: null, value: "", text: "CREATE"}
-    }
     return(
         <div className={'w-full h-full flex flex-col items-center'}>
-            <Form form={form}/>
+            <div className={outer_div}>
+                <h1>CREATE PHASE:</h1>
+                <form onSubmit={CreateP} className={inner_form}>
+                    <label htmlFor="project">PROJECT: </label>
+                    <select id="project" name="project" placeholder="Project" required className={input_text}>
+
+                    </select>
+
+                    <label htmlFor="name">PHASE NAME: </label>
+                    <input type="text" id="name" name="name" placeholder="Phase Name" required className={input_text}></input>
+
+                    <label htmlFor="date">Due Date: </label>
+                    <input type="date" id="date" name="date" placeholder="Due Date" min={d.toJSON().slice(0, 10)} required className={input_text}></input>
+        
+                    <button type="submit" className={submit}>CREATE</button>
+                </form>
+            </div>
         </div>
     )
 }
 
-export function DeletePhase(){
+export function DeletePhase(props){
+    function RemoveP(e){
+        e.preventDefault()
+    }
+
     return(
-        <div className={'w-full h-full flex flex-col items-center'}>
-            <div className={outer_div}>
-                <h1>REGISTER PROJECT:</h1>
-                <form onSubmit={RegisterProject} className={inner_form}>
-                    <label htmlFor="project">PROJECT NAME:</label>
-                    <input type="text" id="project" name="project" placeholder="Project Name" className={input_text} required />
-                    
-                    <button type="submit" className={submit}>Register</button>
-                </form>
-            </div>
+        <div className={outer_div}>
+            <form onSubmit={RemoveP} className={inner_form}>
+                <input type="text" id="id" name="id" value={props.id} required hidden readOnly></input>
+                <button type="submit" className={submit}>CREATE</button>
+            </form>
         </div>
     )
 }
@@ -225,56 +245,66 @@ export function SubmitPhase(){
     )
 }
 
-export function UpdatePhase(){
-    function UP(e){
+export function Approve(props){
+    if(userLoggedIn() == null || userLoggedIn() == false)
+        return 
+
+    function App(e){
         e.preventDefault()
 
-        const formData = FormData(e.target)
+        const formData = new FormData(e.target)
         const id = formData.get("id")
-        const synopsis = formData.get("synopsis")
-        const presentation = formData.get("presentation")
 
         axios({
-            method: "post",
-            url: 'progress/UpdatePhase',
+            method: 'post',
+            url: 'project/approve',
             data: {
-                id: id,
-                synopsis: synopsis,
-                presentation: presentation
+                id: id
             }
         })
-        .then(
-            res => {
-                if(res.status == 200)
-                    alert("Updated")
-                else if(res.status == 400)
-                    alert("Check form elements")
-                else
-                    alert("Error")
-            }
-        )
-        .catch(e => console.log(e))
-
+        .then(res => {
+            alert()
+            console.log(res)
+        })
     }
-
     return(
         <>
-        <div className={'w-full h-full flex flex-col items-center'}>
-            <div className={outer_div}>
-                <h1>Submit Phase:</h1>
-                <form onSubmit={UP} className={inner_form}>
-                    <label htmlFor="link"></label>
-                    <input type="link" id="link" name="link" className={input_text}/>
-                    <label htmlFor="approver">APPROVER</label>
-                    <input type="text" id="approver" value={getApproverAndCoordinator()[0]} disabled className={input_text}/>
+        <form onSubmit={App} className="py-2 justify-items-center">
+            <input type="text" name="id" value={props.id} required hidden readOnly></input>
+            <button type="submit">APPROVE</button>
+        </form>
+        </>
+    )
+}
 
-                    <label htmlFor="coodinator">COORDINATOR</label>
-                    <input type="text" id="coordinator" value={getApproverAndCoordinator()[1]} disabled className={input_text}/>
-        
-                    <button type="submit" className={submit}>Submit</button>
-                </form>
-            </div>
-        </div>
+export function Deny(props){
+    if(userLoggedIn() == null || userLoggedIn() == false)
+        return 
+
+    function Den(e){
+        e.preventDefault()
+
+        const formData = new FormData(e.target)
+        const id = formData.get("id")
+
+        axios({
+            method: 'post',
+            url: 'project/deny',
+            data: {
+                id: id
+            }
+        })
+        .then(res => {
+            alert()
+            console.log(res)
+        })
+    }
+    return(
+        <>
+        <form onSubmit={Den} className="py-2 justify-items-center">
+            <input type="text" name="id" value={props.id} required hidden readOnly></input>
+            <button type="submit">DENY</button>
+        </form>
         </>
     )
 }

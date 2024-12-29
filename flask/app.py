@@ -1,4 +1,4 @@
-from flask import Flask, make_response, request
+from flask import Flask, make_response
 from flask_cors import CORS
 from http import HTTPStatus
 

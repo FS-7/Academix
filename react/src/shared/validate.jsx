@@ -32,6 +32,12 @@ export function validatePassword(password, password2=password){
     return true
 }
 
+export function validateLevel(level){
+    if(level < 0 || level > 3)
+        return false
+    return true
+}
+
 export function userLoggedIn() {
     return JSON.parse(localStorage.getItem('logged_user'));
 }

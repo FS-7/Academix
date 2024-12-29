@@ -6,6 +6,8 @@ import { inner_form, input_text, outer_div, submit } from "../main.jsx";
 const menuItems = [
     {path: "/roles/Add", text: "Add Roles"},
     {path: "/roles/Update", text: "Update Roles"},
+    {path: '/roles/permissions/Add', text: "Add Permissions"},
+    {path: '/roles/permissions/Bind', text: "Bind Permissions"},
 ]
 
 export function Roles(){
@@ -142,9 +144,7 @@ export function UpdateRoles(){
                                     <option key={items["ID"]} value={items["ID"]}>{items["NAME"]}</option>
                             )
                         }
-                    </select>   
-                    <label htmlFor="newid">NEW ID: </label>
-                    <input type="text" id="newid" name="newid" placeholder="New Id" className={input_text}></input>
+                    </select>
         
                     <label htmlFor="name">NAME: </label>
                     <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>

@@ -2,7 +2,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Body } from "../shared/Body.jsx";
 import { outer_div, inner_form, input_text, submit } from "../main.jsx";
-import { Table } from "../shared/Templates.jsx";
 
 const menuItems = [
     {path: "/department/Create", text: "Create"},
@@ -15,6 +14,28 @@ export function Department(){
             <Body menuItems={menuItems}/>
         </>
     )
+}
+
+export function ReadDept(){
+    const [departments, setDepartment] = useState([]);
+    useEffect(() => {
+        axios({
+            method: "GET",
+            url: '/departments/ReadAll',
+        })
+        .then(res => {
+            if(res.status == 200)
+                if(Array.isArray(res.data))
+                    setDepartment(_ => _ = res.data)
+            else if(res.status == 400)
+                alert("Check form elements")
+            else
+                alert("Unknown Error")
+        })
+        .catch(e => console.log(e))
+    }, [])
+    
+    return departments
 }
 
 export function CreateDepartment(){
@@ -32,13 +53,17 @@ export function CreateDepartment(){
                 name: name
             }
         })
-        .then(
-            res => {
-                alert("Department Added")
-            }
-        )
+        .then(res => {
+            if(res.status == 201)
+                alert("Department Created")
+            else if(res.status == 400)
+                alert("Check form elements")
+            else
+                alert("Unknown Error")
+        })
+        .catch(e => console.log(e))
     }
-    
+
     return(
         <>
         <div className={'w-full h-full flex flex-col items-center'}>
@@ -63,44 +88,42 @@ export function CreateDepartment(){
 }
 
 export function ReadDepartment(){
-    const [departments, setDepartment] = useState([]);
+    const departments = ReadDept()
     
-    function ReadDept(){
-        useEffect(() => {
-            axios({
-                method: "GET",
-                url: '/departments/ReadAll',
-            })
-            .then(res => {
-                if(Array.isArray(res.data))
-                    setDepartment(dept => dept = res.data)
-                else
-                    setDepartment(dept => dept = [])
-            });
-        }, [])
-    }
-    ReadDept()
-    
-    let row = {}
-    if(departments[0] != undefined)
-        row = departments[0]
-
-    const table = {
-        tablehead: ["NAME", "REMOVE"],
-        tablebody: {keys: Object.keys(row), data: departments, deleteFunction: <RemoveDepartment />}
-    }
     return(
         <>
         <div className="w-4/6 justify-items-center">
-            <Table table={table} />
+            <table>
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>DELETE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        departments.map(item => 
+                            <tr key={item["CODE"]}>
+                                <td>{item["NAME"]}</td>
+                                <td><RemoveDepartment code={item["CODE"]}/></td>                        
+                            </tr>
+                        )
+                    }
+                </tbody>
+            </table>
         </div>
         </>
     )
 }
 
 export function RemoveDepartment(props){
-    function RemoveDept(formData){
+    function RemoveDept(e){
+        e.preventDefault()
+
+        const formData = new FormData(e.target);
+
         const code = formData.get("code");
+
         axios({
             method: "POST",
             url: '/departments/Remove',
@@ -109,50 +132,67 @@ export function RemoveDepartment(props){
             }
         })
         .then(res => {
-            alert("Department Removed")
+            if(res.status == 200)
+                alert("Department Removed")
+            else if(res.status == 400)
+                alert("Check form elements")
+            else
+                alert("Unknown Error")
         })
+        .catch(e => console.log(e))
     }
 
     return(
         <>
         <form onSubmit={RemoveDept} className="py-2 justify-items-center">
-            <button type="submit" name="code" value={props.code} className={submit}>DELETE</button>
+            <input type="text" name="code" value={props.code} required hidden readOnly></input>
+            <button type="submit" className={submit}>DELETE</button>
         </form>
         </>
     )
 }
 
 export function UpdateDepartment(){
-    function UpdateDept(formData){
-        const code = formData.get("code");
-        var newcode = formData.get("newcode");
-        const newname = formData.get("newcode");
+    function UpdateDept(e){
+        e.preventDefault()
 
-        if(code == newcode || newcode == null || newcode == ''){
-            newcode = code
-        }
-        useEffect(() => {
-            axios({
-                method: "POST",
-                url: '/departments/Update',
-                data: {
-                    code: code,
-                    newcode: newcode,
-                    newname: newname
-                }
-            })
-        }, [])
+        const formData = new FormData(e.target);
+        const code = formData.get("code");
+        const newname = formData.get("newname");
+
+        axios({
+            method: "POST",
+            url: '/departments/Update',
+            data: {
+                code: code,
+                newname: newname
+            }
+        })
+        .then(res => {
+            if(res.status == 200)
+                alert("Department Removed")
+            else if(res.status == 400)
+                alert("Check form elements")
+            else
+                alert("Unknown Error")
+        })
+        .catch(e => console.log(e))
     }
+
+    const departments = ReadDept()
     return(
         <>
         <div className={outer_div}>
             <h1>UPDATE DEPARTMENT:</h1>
             <form onSubmit={UpdateDept} className={inner_form}>
                 <label htmlFor="code">CODE: </label>
-                <input type="text" id="code" name="code" placeholder="Code" className={input_text}></input>
-                
-                <label htmlFor="newcode">NEWCODE: </label>
-                <input type="text" id="newcode" name="newcode" placeholder="New Code" className={input_text}></input>
+                <select type="text" id="code" name="code" placeholder="Code" required className={input_text}>
+                    {
+                        departments.map( item => 
+                            <option key={item["CODE"]} value={item["CODE"]}>{item["CODE"]}</option>
+                        )
+                    }
+                </select>
 
                 <label htmlFor="name">NAME: </label>
                 <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>

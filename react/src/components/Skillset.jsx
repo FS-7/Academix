@@ -1,8 +1,8 @@
 import axios from "axios";
-import { Body } from "../shared/Body.jsx";
 import { useEffect, useState } from "react";
+
+import { Body } from "../shared/Body.jsx";
 import { inner_form, input_text, outer_div, submit } from "../main.jsx";
-import { Table } from "../shared/Templates.jsx";
 
 const menuItems = [
     {path: '/skillset/Add', text: 'Add Skill Set'},
@@ -19,7 +19,7 @@ export function SkillSet(){
     )
 }
 
-function ReadSkillSet(){
+export function ReadSkillSet(){
     const [skillSet, setSkillSet] = useState([])
     useEffect(() => {
         axios({
@@ -68,16 +68,6 @@ export function AddSkillSet(){
         })
         .catch(e => console.log(e))
     }
-    const skillSet = ReadSkillSet()
-
-    let row = {}
-    if(skillSet[0] != undefined)
-        row = skillSet[0]
-                
-    const table = {
-        tablehead: ["SKILLSET", "REMOVE"],
-        tablebody: {keys: Object.keys(row), data: skillSet, deleteFunction: <DeleteSkillSet />}
-    }
 
     return(
         <>
@@ -92,10 +82,34 @@ export function AddSkillSet(){
                     </form>
                 </div>
                 <div className={outer_div}>
-                    <Table table={table} />
+                    <ReadSkillSetTable />
                 </div>
             </div>
         </>
+    )
+}
+
+export function ReadSkillSetTable(){
+    const skillSet = ReadSkillSet()
+    return(
+        <table >
+            <thead>
+                <tr>
+                    <th>NAME</th>
+                    <th>DELETE</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    skillSet.map( item =>
+                        <tr key={item["ID"]}>
+                            <td>{item["NAME"]}</td>
+                            <td><DeleteSkillSet id={item["ID"]}/></td>
+                        </tr>
+                    )
+                }
+            </tbody>
+        </table>
     )
 }
 
@@ -205,9 +219,7 @@ export function ReadSkill(){
         })
         .catch(e => console.log(e))
     }, [])
-    if(Array.isArray(skill))
-        return skill
-    return []
+    return skill
 }
 
 export function AddSkill(){
@@ -241,16 +253,6 @@ export function AddSkill(){
     }
     
     const skillset = ReadSkillSet()
-    const skills = ReadSkill()
-
-    let row = {}
-    if(skills[0] != undefined)
-        row = skills[0]
-                
-    const table = {
-        tablehead: ["SKILL", "REMOVE"],
-        tablebody: {keys: Object.keys(row), data: skills, deleteFunction: <DeleteSkill />}
-    }
 
     return(
         <>
@@ -260,8 +262,10 @@ export function AddSkill(){
                 <form onSubmit={AS} className={inner_form}>
                     <label htmlFor="name">NAME: </label>
                     <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
+
                     <label htmlFor="link">LINK: </label>
                     <input type="text" id="link" name="link" placeholder="Link" required className={input_text}></input>
+
                     <label htmlFor="skillset">SKILLSET: </label>
                     <select name="skillset" id="skillset" required className={input_text}>
                         {
@@ -270,14 +274,44 @@ export function AddSkill(){
                             )
                         }
                     </select>
+
                     <button type="submit" className={submit}>ADD</button>
                 </form>
             </div>
             <div className={outer_div}>
-                <Table table={table} />
+                <ReadSkillTable />
             </div>
         </div>
         </>
+    )
+}
+
+export function ReadSkillTable(){
+    const skill = ReadSkill()
+    console.log(skill)
+    return(
+        <table >
+            <thead>
+                <tr>
+                    <th>NAME</th>
+                    <th>LINK</th>
+                    <th>SKILLSET</th>
+                    <th>DELETE</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    skill.map( item =>
+                        <tr key={item["ID"]}>
+                            <td>{item["NAME"]}</td>
+                            <td>{item["LINK"]}</td>
+                            <td>{item["SKILLSET"]}</td>
+                            <td><DeleteSkillSet id={item["ID"]}/></td>
+                        </tr>
+                    )
+                }
+            </tbody>
+        </table>
     )
 }
 
@@ -286,14 +320,19 @@ export function UpdateSkill(){
         e.preventDefault()
 
         const formData = new FormData(e.target)
-        const skill = formData.get("skill")
-        const name = formData.get("name")
+        const id = formData.get("id")
+        const newname = formData.get("newname")
+        const newlink = formData.get("newlink")
+        const newskillsetid = formData.get("newskillsetid")
+
         axios({
             method: "post",
             url: "skillset/skill/Update",
             data: {
-                skill: skill,
-                name: name
+                id: id,
+                newname: newname,
+                newlink: newlink,
+                newskillsetid: newskillsetid,
             }
         }
         )
@@ -307,23 +346,37 @@ export function UpdateSkill(){
         })
         .catch(e => console.log(e))
     }
+
     const skills = ReadSkill()
+    const skillset = ReadSkillSet()
+    
     return(
         <>
         <div className={'w-full h-full flex flex-col items-center'}>
             <div className={outer_div}>
                 <h1>UPDATE SKILL:</h1>
                 <form onSubmit={US} className={inner_form}>
-                    <label htmlFor="skill">SKILL: </label>
-                    <select name="skill" id="skill" required className={input_text}>
+                    <select name="id" id="id" required className={input_text}>
                         {
                             skills?.map(
                                 items => <option key={items["ID"]} value={items["ID"]}>{items["NAME"]}</option>
                             )
                         }
                     </select>
-                    <label htmlFor="name">NAME: </label>
-                    <input type="text" id="name" name="name" placeholder="Name" required className={input_text}></input>
+                    <label htmlFor="newname">NAME: </label>
+                    <input type="text" id="newname" name="newname" placeholder="Name" required className={input_text}></input>
+
+                    <label htmlFor="newlink">LINK: </label>
+                    <input type="text" id="newlink" name="newlink" placeholder="Link" required className={input_text}></input>
+
+                    <label htmlFor="newskillsetid">SKILLSET: </label>
+                    <select name="newskillsetid" id="newskillsetid" required className={input_text}>
+                        {
+                            skillset?.map(
+                                items => <option key={items["ID"]} value={items["ID"]}>{items["NAME"]}</option>
+                            )
+                        }
+                    </select>
                     <button type="submit" className={submit}>UPDATE</button>
                 </form>
             </div>
