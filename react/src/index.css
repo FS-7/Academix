@@ -30,7 +30,7 @@ body {
   height: 100%;
 }
 
-@media (min-width: 400px){
+@media (min-width: 350px){
   .lowestRes\:hidden{
     display: none;
   }

@@ -312,18 +312,7 @@ def RegisterAsStudent():
         val = { "USN": USN, "STUDENT": STUDENT, "DEPARTMENT": DEPARTMENT, "BATCH": BATCH, "APPROVER": User }
         cursor = execute(sql, val)
         for x in cursor:
-            id = x[0]
-            pass_hash = x[1]
-
-        if(pass_hash == oldPassHash):
-            sql = "UPDATE USERS SET PASS_HASH=%(NEW_PASS)s WHERE ID=%(ID)s;"
-            val = { "NEW_PASS": newPassHash, "ID": id}
-            cursor = execute(sql, val)
-            if(cursor.rowcount == 1):
-                db.commit()
-                db.close()
-                resBody = {}
-                resStatus = HTTPStatus.OK
+            pass
     
     except connector.ProgrammingError as e:
         resStatus = HTTPStatus.INTERNAL_SERVER_ERROR

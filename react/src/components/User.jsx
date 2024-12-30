@@ -8,7 +8,9 @@ import { outer_div, inner_form, input_text, submit } from "../main.jsx";
 import { Read_Roles } from "./Roles.jsx";
 
 const menuItems = [
-    { path: "/User/", text: "Profile"},
+    { path: "/user/", text: "Profile"},
+    { path: "/Register", text: "Register"},
+    { path: "/Login", text: "Login"},
     { path: "/user/UpdateProfile", text: "Update Profile"},
     { path: "/user/UpdatePassword", text: "Update Password"},
     { path: "/user/roles/SetUserRole", text: "Set User Role"},
