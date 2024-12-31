@@ -41,3 +41,7 @@ export function validateLevel(level){
 export function userLoggedIn() {
     return JSON.parse(localStorage.getItem('logged_user'));
 }
+
+export function userPermissions(){
+    return JSON.parse(localStorage.getItem('permissions'));
+}

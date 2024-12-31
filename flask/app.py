@@ -15,6 +15,9 @@ from user import user
 app = Flask(__name__)
 cors = CORS(app, supports_credentials = True)
 
+UPLOAD_FOLDER = '../files/'
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
+
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
 app.config["SESSION_COOKIE_SECURE"] = True

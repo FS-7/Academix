@@ -1,7 +1,7 @@
 from flask import Blueprint, make_response, request, session
 from http import HTTPStatus
 from mysql import connector
-from utils import db, execute, validateEmail, validatePhone, validatePassword, deletePrevSessions, createSession, GetUser, GetToken
+from utils import db, execute, validateEmail, validatePhone, validatePassword, deletePrevSessions, createSession, GetUser, GetToken, GetUserPermissions
 from hashlib import sha256
 import json
 
@@ -94,7 +94,8 @@ def Login():
                 if(res):
                     db.close()
                     session["TOKEN"] = TOKEN
-                    resBody = {}
+                    permissions = GetUserPermissions(id)
+                    resBody = {"permissions": permissions}
                     resStatus = HTTPStatus.OK
     
     except connector.ProgrammingError as e:
@@ -286,43 +287,3 @@ def UpdatePassword():
         print(e)
 
     return make_response(resBody, resStatus)
-
-@user.route("/RegisterAsStudent", methods=["POST"])
-def RegisterAsStudent():
-    resBody = {}
-    resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-    
-    TOKEN = GetToken()
-    User = GetUser(TOKEN)
-    if(User == -1):
-        resBody = {}
-        resStatus = HTTPStatus.UNAUTHORIZED
-        return make_response(resBody, resStatus)
-    
-    data = json.loads(request.data)
-
-    USN = data["usn"]
-    STUDENT = data["student"]
-    DEPARTMENT = data["department"]
-    BATCH = data["batch"]
-    User = GetUser(TOKEN)
-
-    try:
-        sql = "INSERT INTO STUDENT(USN, STUDENT, DEPARTMENT, BATCH, APPROVER) VALUES(%(USN)s, %(STUDENT)s, %(DEPARTMENT)s, %(BATCH)s, %(APPROVER)s);"
-        val = { "USN": USN, "STUDENT": STUDENT, "DEPARTMENT": DEPARTMENT, "BATCH": BATCH, "APPROVER": User }
-        cursor = execute(sql, val)
-        for x in cursor:
-            pass
-    
-    except connector.ProgrammingError as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except connector.Error as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-    except Exception as e:
-        resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
-        print(e)
-
-    return make_response(resBody, resStatus)
-

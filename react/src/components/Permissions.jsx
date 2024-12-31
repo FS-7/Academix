@@ -207,7 +207,6 @@ export function BindPermission(){
     }
 
     const roles = Read_Roles()
-    const depts = ReadDept()
     const perms = Read_Permissions()
     
     return(
@@ -221,15 +220,6 @@ export function BindPermission(){
                             {
                                 roles.map(item => 
                                     <option key={item["ID"]} value={item["ID"]}>{item["NAME"]}</option>
-                                )
-                            }
-                        </select>
-
-                        <label htmlFor="department">DEPARTMENT: </label>
-                        <select type="text" id="department" name="department" placeholder="Department" className={input_text}>
-                            {
-                                depts.map(item => 
-                                    <option key={item["CODE"]} value={item["CODE"]}>{item["NAME"]}</option>
                                 )
                             }
                         </select>
@@ -270,7 +260,6 @@ export function ReadRP(){
             <thead>
                 <tr>
                     <th>ROLE</th>
-                    <th>DEPARTMENT</th>
                     <th>PERMISSION</th>
                     <th>LEVEL</th>
                     <th>DELETE PERMISSION</th>
@@ -282,7 +271,6 @@ export function ReadRP(){
                         items => 
                         <tr key={items["ID"]}>
                             <td>{items["ROLE"]}</td>
-                            <td>{items["DEPARTMENT"]}</td>
                             <td>{items["PERMISSION"]}</td>
                             <td>{items["LEVEL"]}</td>
                             <td><DeleteRP id={items["ID"]} /></td>

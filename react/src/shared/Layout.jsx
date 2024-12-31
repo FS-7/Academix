@@ -98,9 +98,9 @@ export function Tabs(props){
 
 export function SideBar(props){
     return (
-        <div className='w-full h-auto overflow-auto md:w-1/6 md:h-full flex flex-row md:flex-col grow px-2 font-black text-xl text-center bg-gradient-to-b from-cyan-400 to-blue-700'>
+        <div className='w-full h-auto overflow-auto md:w-1/6 md:h-full flex flex-row items-center md:flex-col grow px-2 font-black text-xl text-center bg-gradient-to-b from-cyan-400 to-blue-700'>
             {props.items.map(
-                (item) => <NavLink key={item.path} to={item.path} className={"w-full py-2 mx-2 "+border}>{item.text}</NavLink>
+                (item) => <NavLink key={item.path} to={item.path} className={"w-5/6 py-2 mx-2 "+border}>{item.text}</NavLink>
             )}
         </div>
     );

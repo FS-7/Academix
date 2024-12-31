@@ -130,6 +130,7 @@ export function Login(){
         .then(res => {
             if(res.status == 200){
                 localStorage.setItem("logged_user", JSON.stringify(true))
+                localStorage.setItem("permissions", JSON.stringify(res.data["permissions"]))
                 alert("User Logged In")
             }
             else if(res.status == 400)

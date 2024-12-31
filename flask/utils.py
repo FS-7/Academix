@@ -100,10 +100,21 @@ def GetToken():
 
 def GetUser(TOKEN):
     id = -1
-    sql = "SELECT USERS.ID FROM USERS, SESSION WHERE TOKEN=%(TOKEN)s;"
+    sql = "SELECT USER FROM SESSION WHERE TOKEN=%(TOKEN)s;"
     val = { "TOKEN": TOKEN }
     cursor = execute(sql, val)
     for x in cursor:
         id = x[0]
     db.close()
     return id
+
+def GetUserPermissions(User):
+    permissions = []
+    sql = "SELECT DISTINCT TEMP.NAME, TEMP.LEVEL FROM `authorization` AS A INNER JOIN (SELECT P.NAME, RP.ROLE, RP.LEVEL FROM `roles_permissions` AS RP INNER JOIN `permissions` AS P ON RP.PERMISSION=P.ID) AS TEMP ON A.ROLE=TEMP.ROLE WHERE USER=%(ID)s AND STATUS='A';"
+    val = { "ID": User }
+    cursor = execute(sql, val)
+    if(cursor.rowcount > 0):
+        for x in cursor:
+            permissions.append(x[0])
+    db.close()
+    return permissions

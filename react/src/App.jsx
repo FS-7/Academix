@@ -4,7 +4,7 @@ import { Header } from './shared/Layout.jsx';
 import { Index } from "./Index.jsx";
 import { About, Devs } from "./About.jsx";
 import { AddAttendance, Attendance, TrainFR } from "./components/Attendance.jsx";
-import { CreateDepartment, Department, UpdateDepartment } from "./components/Departments.jsx";
+import { CreateDepartment, Department, Student, StudentsList, Subject, Teacher, TeachersList, UpdateDepartment } from "./components/Departments.jsx";
 import { AddPermission, BindPermission } from "./components/Permissions.jsx";
 import { Register as RegisterProject, Status, Project, CreatePhase } from "./components/Project.jsx";
 import { AddRoles, Roles,  UpdateRoles } from "./components/Roles.jsx";
@@ -63,6 +63,11 @@ function App() {
                         <Route path="Department" element={<Department />} >
                             <Route path="Create" element={<CreateDepartment />} /> 
                             <Route path="Update" element={<UpdateDepartment />} /> 
+                            <Route path="Subject" element={<Subject />} />
+                            <Route path="Teacher/Register" element={<Teacher />} />
+                            <Route path="Teacher/List" element={<TeachersList />} />
+                            <Route path="Student/Register" element={<Student />} />
+                            <Route path="Student/List" element={<StudentsList />} />
                         </Route>
                         
                         <Route path="Roles" element={<Roles />} >

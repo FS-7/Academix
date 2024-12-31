@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { inner_form, input_text, outer_div, submit } from "../main.jsx";
 import { Body } from "../shared/Body.jsx";
@@ -11,29 +11,6 @@ const menuItems = [
     {path: 'CreatePhase', text: 'Create Phase'},
 ]
 
-function getApproverAndCoordinator(){
-    const [approver, setApprover] = useState()
-    const [coodinator, setCoordinator] = useState()
-
-    axios({
-        method: 'get',
-        url: 'project/getAnC'
-    })
-    .then(res => {
-        if(res.status == 200){
-            setApprover(a => a = res.data["APPROVER"])
-            setCoordinator(a => a = res.data["COORDINATOR"])
-        }
-        else if(res.status == 400)
-            alert("Check form elements")
-        else
-            alert("Unknown Error")
-    })
-    .catch(e => console.log(e))
-
-    return [approver, coodinator]
-}
-
 export function Project(){
     return(
         <>
@@ -43,39 +20,51 @@ export function Project(){
 }
 
 export function Status(){
-    function getStatus(){
-        const [status, setStatus] = useState()
-        axios({
-            method: "get",
-            url: "",
-            data: {
-
-            }
-        })
-        .then(res => {
-
-        })
-        .catch(e => console.log(e))
+    const [status, setStatus] = useState([])
+    async function getStatus(){
+        useEffect(() => {
+            axios({
+                method: "GET",
+                url: "/project/status",
+                data: {}
+            })
+            .then(res => {
+                if(res.status == 200)
+                    if(Array.isArray(res.data))
+                        setStatus(_ => _ = res.data)
+                else if(res.status == 400)
+                    alert('Bad Request')
+                else
+                    alert('Internal Error')
+            })
+            .catch(e => console.log(e))
+        }, [])
     }
+
+    const res = async() => await getStatus()
+    res().then()
+
     return(
         <>
-        <table className="w-full table-auto">
-            <thead>
-                <tr>
-                    <th>NAME</th>
-                    <th>STUDENT 1</th>
-                    <th>STUDENT 2</th>
-                    <th>STUDENT 3</th>
-                    <th>STUDENT 4</th>
-                    <th>PROJECT STATUS</th>
-                    <th>COORDINATOR</th>
-                    <th>STATUS</th>
-                </tr>
-            </thead>
-            <tbody>
-                
-            </tbody>
-        </table>
+        {
+            status.map(
+                item =>
+                    <div className="flex flex-col" key={item["ID"]}>
+                        <h1>NAME: {item["NAME"]}</h1>
+                        <div className="flex flex-row">
+                            <h2>GUIDE: {item["GUIDE"]}</h2>
+                            <h2>COORDINATOR: {item["COORDINATOR"]}</h2>
+                        </div>
+                        <h2>MEMBERS</h2>
+                        <div className="flex flex-col">
+                            <h3>1. {item["TEAMLEAD"]}</h3>
+                            <h3>2. {item["MEMBER1"]}</h3>
+                            <h3>3. {item["MEMBER2"]}</h3>
+                            <h3>4. {item["MEMBER3"]}</h3>
+                        </div>
+                    </div>
+            )
+        }
         </>
     )
 }
@@ -86,10 +75,10 @@ export function Register(){
 
         const formData = new FormData(e.target)
         const name = formData.get("project")
+        const teamlead = formData.get("teamlead")
         const member1 = formData.get("member1")
         const member2 = formData.get("member2")
         const member3 = formData.get("member3")
-        const member4 = formData.get("member4")
         const coordinator = formData.get("coordinator")
 
         if(!validateEmail(coordinator)){
@@ -99,13 +88,13 @@ export function Register(){
 
         axios({
             method: "post",
-            url: 'progress/Add',
+            url: 'project/register',
             data: {
                 name: name,
+                teamlead: teamlead,
                 member1: member1,
                 member2: member2,
                 member3: member3,
-                member4: member4,
                 coordinator: coordinator
             }
         })
@@ -125,7 +114,6 @@ export function Register(){
 
     return(
         <>
-        
         <div className={'w-full h-full flex flex-col items-center'}>
             <div className={outer_div}>
                 <h1>REGISTER PROJECT:</h1>
@@ -133,6 +121,9 @@ export function Register(){
                     <label htmlFor="project">PROJECT NAME: </label>
                     <input type="text" id="project" name="project" placeholder="Project" required className={input_text}></input>
                     
+                    <label htmlFor="teamlead">TEAM LEAD: </label>
+                    <input type="text" id="teamlead" name="teamlead" placeholder="Team Lead" className={input_text}></input>
+
                     <label htmlFor="member1">MEMBER 1: </label>
                     <input type="text" id="member1" name="member1" placeholder="Member 1" required className={input_text}></input>
                     
@@ -141,9 +132,6 @@ export function Register(){
 
                     <label htmlFor="member3">MEMBER 3: </label>
                     <input type="text" id="member3" name="member3" placeholder="Member 3" className={input_text}></input>
-
-                    <label htmlFor="member4">MEMBER 4: </label>
-                    <input type="text" id="member4" name="member4" placeholder="Member 4" className={input_text}></input>
 
                     <label htmlFor="coordinator">COORDINATOR: </label>
                     <input type="text" id="coordinator" name="coordinator" placeholder="Coordinator" required className={input_text}></input>
@@ -159,27 +147,28 @@ export function Register(){
     )
 }
 
-export function GetProjects(){
-
-    return(
-        <table>
-            <thead>
-                <tr>
-                    <th>NAME</th>
-                    <th>COORDINATOR</th>
-                    <th>STATUS</th>
-                </tr>
-            </thead>
-        </table>
-    )
-}
-
 export function Remove(props){
     function RemoveProject(e){
         e.preventDefault()
+        const formData = FormData(e.target)
+        const id = formData.get("id")
+        
+        useEffect(() => {
+            axios({
+                method: 'post',
+                url: '/project/remove',
+                data: {
+                    id: id
+                }
+            })
+            .then(res => {
+                if(res.status == 200)
+                    alert('Removed')
+                else
+                    alert('Error')
+            })
+        })
     }
-    
-
     return(
         <>
             <form onSubmit={RemoveProject} className={inner_form}>
@@ -191,15 +180,57 @@ export function Remove(props){
 }
 
 export function CreatePhase(){
-    
     const d = new Date()
 
-    function CreateP(){
+    function CreateP(e){
         e.preventDefault()
+        const formData = new FormData(e.target)
+        const project = formData.get("project")
+        const name = formData.get("name")
+        const duedate = formData.get("duedate")
+        axios({
+            method: "POST",
+            url: "/project/createphase",
+            data: {
+                project: project,
+                name: name,
+                duedate: duedate
+            }
+        })
+        .then(res => {
+            if(res.status == 201)
+                alert("Phase Created")
+            else if(res.status == 400)
+                alert('Bad Request')
+            else
+                alert('Internal Error')
+        })
+        .catch(e => console.log(e))
     }
 
-    const ProjectList = []
-    const AnC = getApproverAndCoordinator()
+    const [phases, setPhases] = useState([])
+    async function getPhases(){
+        useEffect(() => {
+            axios({
+                method: "GET",
+                url: "/project/read",
+                data: {}
+            })
+            .then(res => {
+                if(res.status == 200)
+                    if(Array.isArray(res.data))
+                        setPhases(_ => _ = res.data)
+                else if(res.status == 400)
+                    alert('Bad Request')
+                else
+                    alert('Internal Error')
+            })
+            .catch(e => console.log(e))
+        }, [])
+    }
+
+    const res = async() => await getPhases()
+    res().then()
 
     return(
         <div className={'w-full h-full flex flex-col items-center'}>
@@ -208,7 +239,11 @@ export function CreatePhase(){
                 <form onSubmit={CreateP} className={inner_form}>
                     <label htmlFor="project">PROJECT: </label>
                     <select id="project" name="project" placeholder="Project" required className={input_text}>
-
+                        {
+                            phases.map(item => 
+                                <option key={item["ID"]} value={item["ID"]}>{item["NAME"]}</option>
+                            )
+                        }
                     </select>
 
                     <label htmlFor="name">PHASE NAME: </label>
@@ -227,6 +262,24 @@ export function CreatePhase(){
 export function DeletePhase(props){
     function RemoveP(e){
         e.preventDefault()
+        const formData = FormData(e.target)
+        const id = formData.get("id")
+        
+        useEffect(() => {
+            axios({
+                method: 'post',
+                url: '/project/removephase',
+                data: {
+                    id: id
+                }
+            })
+            .then(res => {
+                if(res.status == 200)
+                    alert('Removed')
+                else
+                    alert('Error')
+            })
+        })
     }
 
     return(
@@ -240,8 +293,38 @@ export function DeletePhase(props){
 }
 
 export function SubmitPhase(){
+    function RemoveP(e){
+        e.preventDefault()
+        const formData = FormData(e.target)
+        const id = formData.get("id")
+        const link = formData.get("link")
+        useEffect(() => {
+            axios({
+                method: 'post',
+                url: '/project/submitphase',
+                data: {
+                    id: id,
+                    link: link
+                }
+            })
+            .then(res => {
+                if(res.status == 200)
+                    alert('Removed')
+                else
+                    alert('Error')
+            })
+        })
+    }
+
     return(
-        <></>
+        <div className={outer_div}>
+            <form onSubmit={RemoveP} className={inner_form}>
+                <input type="text" id="id" name="id" value={props.id} required hidden readOnly className={input_text}></input>                
+                <label htmlFor="link">LINK: </label>
+                <input type="link" id="link" name="link" placeholder="Files Link" required className={input_text}></input>
+                <button type="submit" className={submit}>SUBMIT</button>
+            </form>
+        </div>
     )
 }
 

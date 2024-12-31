@@ -166,7 +166,8 @@ def Delete():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ID = request.form["id"]
+    data = json.loads(request.data)
+    ID = data["id"]
 
     try:
         sql = "DELETE FROM ROLES WHERE ID=%(ID)s;"
@@ -394,10 +395,11 @@ def RemoveRequest():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    User = GetUser(TOKEN)
-    ID = request.form["id"]
+    data = json.loads(request.data)
 
-    res = []
+    User = GetUser(TOKEN)
+    ID = data["id"]
+
     try:
         sql = "DELETE FROM AUTHORIZATION WHERE ID=%(ID)s AND USER=%(USER)s;"
         val = { "ID": ID, "USER": User }
@@ -431,23 +433,19 @@ def Approve():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ID = request.form["id"]
+    data = json.loads(request.data)
+    
+    ID = data["id"]
     User = GetUser(TOKEN)
     
     try:
-        sql = "SELECT APPROVER FROM AUTHORIZATION WHERE ID=%(ID)s"
-        val = { "ID": ID }
+        sql = "UPDATE AUTHORIZATION SET STATUS='A' WHERE ID=%(ID)s AND APPROVER=(SELECT EMAIL FROM USERS WHERE ID=%(APPROVER)s);"
+        val = { "ID": ID, "APPROVER": User }
         cursor = execute(sql, val)
-        for x in cursor:
-            APPROVER = x[0]
-        
-        if(APPROVER == User):
-            sql = "UPDATE AUTHORIZATION SET STATUS='A' WHERE ID=%(ID)s"
-            cursor = execute(sql, val)
-            if(cursor.rowcount == 1):
-                db.commit()
-                resBody = {}
-                resStatus = HTTPStatus.OK
+        db.commit()
+        db.close()
+        resBody = {}
+        resStatus = HTTPStatus.OK
 
     except connector.ProgrammingError as e:
         resStatus = HTTPStatus.INTERNAL_SERVER_ERROR
@@ -473,22 +471,19 @@ def Deny():
         resStatus = HTTPStatus.UNAUTHORIZED
         return make_response(resBody, resStatus)
     
-    ID = request.form["id"]
+    data = json.loads(request.data)
+
+    ID = data["id"]
     User = GetUser(TOKEN)
     
     try:
-        sql = "SELECT APPROVER FROM AUTHORIZATION WHERE ID=%(ID)s"
-        val = { "ID": ID }
+        sql = "UPDATE AUTHORIZATION SET STATUS='D' WHERE ID=%(ID)s AND APPROVER=(SELECT EMAIL FROM USERS WHERE ID=%(APPROVER)s);"
+        val = { "ID": ID, "APPROVER": User }
         cursor = execute(sql, val)
-        for x in cursor:
-            APPROVER = x[0]
-        
-        if(APPROVER == User):
-            sql = "UPDATE AUTHORIZATION SET STATUS='D' WHERE ID=%(ID)s"
-            cursor = execute(sql, val)
-            db.commit()
-            resBody = {}
-            resStatus = HTTPStatus.OK
+        db.commit()
+        db.close()
+        resBody = {}
+        resStatus = HTTPStatus.OK
     
     except connector.ProgrammingError as e:
         resStatus = HTTPStatus.INTERNAL_SERVER_ERROR

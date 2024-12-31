@@ -210,13 +210,12 @@ def CreateRP():
     data = json.loads(request.data)
 
     ROLE = data["role"]
-    DEPARTMENT = data["department"]
     PERMISSION = data["permission"]
     LEVEL = data["level"]
 
     try:
-        sql = "INSERT INTO ROLES_PERMISSIONS(ROLE, DEPARTMENT, PERMISSION, LEVEL) VALUES(%(ROLE)s, %(DEPARTMENT)s, %(PERMISSION)s, %(LEVEL)s);"
-        val = { "ROLE": ROLE, "DEPARTMENT": DEPARTMENT, "PERMISSION": PERMISSION, "LEVEL": LEVEL}
+        sql = "INSERT INTO ROLES_PERMISSIONS(ROLE, PERMISSION, LEVEL) VALUES(%(ROLE)s, %(PERMISSION)s, %(LEVEL)s);"
+        val = { "ROLE": ROLE, "PERMISSION": PERMISSION, "LEVEL": LEVEL}
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()
@@ -287,11 +286,11 @@ def ReadAllRP():
     
     rp = []
     try:
-        sql = "SELECT * FROM ROLES_PERMISSIONS;"
+        sql = "SELECT TEMP.ID, R.NAME, TEMP.NAME, TEMP.LEVEL FROM ROLES AS R INNER JOIN (SELECT RP.ID, RP.ROLE, P.NAME, RP.LEVEL FROM ROLES_PERMISSIONS AS RP INNER JOIN PERMISSIONS AS P ON RP.PERMISSION=P.ID) AS TEMP ON TEMP.ROLE=R.ID;"
         cursor = execute(sql)
         db.commit()
         for c in cursor:
-            rp.append({"ID": c[0], "NAME": c[1]})
+            rp.append({"ID": c[0], "ROLE": c[1], "PERMISSION": c[2], "LEVEL": c[3]})
         resBody = rp
         resStatus = HTTPStatus.OK
 
@@ -323,13 +322,12 @@ def UpdateRP():
 
     ID = data["id"]
     ROLES = data["roles"]
-    DEPARTMENT = data["department"]
     PERMISSION = data["permission"]
     LEVEL = data["level"]
 
     try:
-        sql = "UPDATE ROLES_PERMISSIONS SET ROLES=%(ROLES)s, DEPARTMENT=%(DEPARTMENT)s, PERMISSION=%(PERMISSION)s, LEVEL=%(LEVEL)s WHERE ID=%(ID)s;"
-        val = { "ROLES": ROLES, "DEPARTMENT": DEPARTMENT, "PERMISSION": PERMISSION, "LEVEL": LEVEL, "ID": ID }
+        sql = "UPDATE ROLES_PERMISSIONS SET ROLES=%(ROLES)s, PERMISSION=%(PERMISSION)s, LEVEL=%(LEVEL)s WHERE ID=%(ID)s;"
+        val = { "ROLES": ROLES, "PERMISSION": PERMISSION, "LEVEL": LEVEL, "ID": ID }
         cursor = execute(sql, val)
         if(cursor.rowcount == 1):
             db.commit()

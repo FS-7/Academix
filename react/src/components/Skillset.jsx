@@ -288,7 +288,7 @@ export function AddSkill(){
 
 export function ReadSkillTable(){
     const skill = ReadSkill()
-    console.log(skill)
+    
     return(
         <table >
             <thead>
@@ -356,6 +356,7 @@ export function UpdateSkill(){
             <div className={outer_div}>
                 <h1>UPDATE SKILL:</h1>
                 <form onSubmit={US} className={inner_form}>
+                    <label htmlFor="id">SKILL: </label>
                     <select name="id" id="id" required className={input_text}>
                         {
                             skills?.map(

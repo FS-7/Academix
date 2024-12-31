@@ -46,7 +46,6 @@ export function AddUserSkill(){
         )
         .then(res => {
             alert("Created")
-            console.log(res)
         })
     }
     const rus = RUS()
@@ -112,7 +111,6 @@ export function DeleteUserSkill(props){
         )
         .then(res => {
             alert("Deleted")
-            console.log(res)
         })
     }
 
