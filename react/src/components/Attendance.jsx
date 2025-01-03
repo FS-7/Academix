@@ -81,8 +81,8 @@ export function AddAttendance(){
     }
     
     const videoConstraints = {
-        width: 1280,
-        height: 720,
+        width: 960,
+        height: 540,
         facingMode: "user"
     };
 
@@ -91,27 +91,25 @@ export function AddAttendance(){
         <div className="flex flex-col justify-center items-center">
             <Webcam
                 audio={false}
-                height={720}
+                height={540}
                 screenshotFormat="image/jpeg"
-                width={1280}
+                width={960}
                 videoConstraints={videoConstraints}
             >
             {({ getScreenshot }) => (
-                <button
-                    onClick={() => {
-                    const image = getScreenshot()
-                    }}
-                >
+                <button onClick={() => { const image = getScreenshot() }} >
                     Capture photo
                 </button>
                 )}
                 
             </Webcam>
-            <input type="file"></input>
         
             <div className={outer_div}>
                 <h1>REGISTER ATTENDANCE:</h1>
                 <form onSubmit={Add} className={inner_form}>
+                    <label htmlFor="subject">SUBJECT: </label>
+                    <input type="text" id="subject" name="subject" ></input>
+        
                     <input type="file" id="image" name="image" ></input>
             
                     <button type="submit" className={submit}>REGISTER</button>
